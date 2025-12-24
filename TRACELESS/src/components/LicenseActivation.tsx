@@ -17,6 +17,7 @@ interface LicenseActivationDialogProps {
 
 /**
  * License activation/management dialog
+ * 许可证激活对话框 - 不显示机器ID，激活时自动上传系统信息
  */
 export const LicenseActivationDialog: React.FC<LicenseActivationDialogProps> = ({
   isOpen,
@@ -26,7 +27,7 @@ export const LicenseActivationDialog: React.FC<LicenseActivationDialogProps> = (
   const {
     status,
     isPro,
-    machineId,
+    isOnline,
     activateLicense,
     deactivateLicense,
   } = useLicense();
@@ -35,7 +36,6 @@ export const LicenseActivationDialog: React.FC<LicenseActivationDialogProps> = (
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
 
   // Reset state when dialog opens
   useEffect(() => {
@@ -43,7 +43,6 @@ export const LicenseActivationDialog: React.FC<LicenseActivationDialogProps> = (
       setLicenseKey('');
       setError(null);
       setSuccess(null);
-      setCopied(false);
     }
   }, [isOpen]);
 
@@ -78,17 +77,6 @@ export const LicenseActivationDialog: React.FC<LicenseActivationDialogProps> = (
     setLicenseKey(formatted.slice(0, 29));
     setError(null);
   }, []);
-
-  // Copy machine ID to clipboard
-  const handleCopyMachineId = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(machineId);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
-  }, [machineId]);
 
   // Activate license
   const handleActivate = useCallback(async () => {
@@ -141,7 +129,6 @@ export const LicenseActivationDialog: React.FC<LicenseActivationDialogProps> = (
   const translatedTierName = t(`license.${tierKey}`, { defaultValue: tierName });
 
   // Use createPortal to render dialog at document.body level
-  // This ensures it's not affected by parent stacking contexts
   return createPortal(
     <div className="license-dialog-overlay" onClick={onClose}>
       <div className="license-dialog" onClick={(e) => e.stopPropagation()}>
@@ -153,29 +140,10 @@ export const LicenseActivationDialog: React.FC<LicenseActivationDialogProps> = (
 
         <h2 className="license-dialog__title">{t('license.activation')}</h2>
 
-        {/* Machine ID Section */}
-        <div className="license-dialog__section">
-          <label className="license-dialog__label">{t('license.machineId')}</label>
-          <div className="license-dialog__machine-id">
-            <code>{machineId}</code>
-            <button
-              className="license-dialog__copy-btn"
-              onClick={handleCopyMachineId}
-              title={t('common.copy')}
-            >
-              {copied ? (
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M20 6L9 17l-5-5" />
-                </svg>
-              ) : (
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
-              )}
-            </button>
-          </div>
-          <p className="license-dialog__hint">{t('license.machineIdHint')}</p>
+        {/* Connection Status */}
+        <div className="license-dialog__connection-status">
+          <span className={`connection-dot ${isOnline ? 'online' : 'offline'}`}></span>
+          <span>{isOnline ? t('license.serverConnected', { defaultValue: '许可证服务器连接成功' }) : t('license.serverDisconnected', { defaultValue: '许可证服务器连接失败' })}</span>
         </div>
 
         {/* Current License Status */}
@@ -253,6 +221,7 @@ export const LicenseActivationDialog: React.FC<LicenseActivationDialogProps> = (
               </svg>
             </button>
           </div>
+          <p className="license-dialog__hint">{t('license.activationHint', { defaultValue: '输入许可证密钥后将自动绑定到此设备' })}</p>
         </div>
 
         {/* Error/Success Messages */}
@@ -271,7 +240,7 @@ export const LicenseActivationDialog: React.FC<LicenseActivationDialogProps> = (
         <button
           className="license-dialog__activate-btn"
           onClick={handleActivate}
-          disabled={loading || licenseKey.length < 29}
+          disabled={loading || licenseKey.length < 29 || !isOnline}
         >
           {loading ? t('common.loading') : t('license.activate')}
         </button>
@@ -326,8 +295,33 @@ export const LicenseActivationDialog: React.FC<LicenseActivationDialogProps> = (
           .license-dialog__title {
             font-size: 1.5rem;
             font-weight: 700;
-            margin: 0 0 24px 0;
+            margin: 0 0 16px 0;
             color: var(--text-primary, #E0E0E0);
+          }
+
+          .license-dialog__connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            font-size: 0.875rem;
+            color: var(--text-secondary, #9CA3AF);
+          }
+
+          .connection-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+          }
+
+          .connection-dot.online {
+            background: #22c55e;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+          }
+
+          .connection-dot.offline {
+            background: #ef4444;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
           }
 
           .license-dialog__section {
@@ -340,37 +334,6 @@ export const LicenseActivationDialog: React.FC<LicenseActivationDialogProps> = (
             font-weight: 500;
             margin-bottom: 8px;
             color: var(--text-secondary, #9CA3AF);
-          }
-
-          .license-dialog__machine-id {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--bg-secondary, rgba(255, 255, 255, 0.05));
-            border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
-            border-radius: 8px;
-            padding: 12px 16px;
-          }
-
-          .license-dialog__machine-id code {
-            flex: 1;
-            font-family: 'SF Mono', Monaco, monospace;
-            font-size: 0.875rem;
-            color: var(--accent-color, #D9943F);
-          }
-
-          .license-dialog__copy-btn {
-            background: none;
-            border: none;
-            color: var(--text-secondary, #9CA3AF);
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 4px;
-            transition: color 0.2s ease;
-          }
-
-          .license-dialog__copy-btn:hover {
-            color: var(--accent-color, #D9943F);
           }
 
           .license-dialog__hint {

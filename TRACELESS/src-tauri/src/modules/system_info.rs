@@ -132,6 +132,32 @@ pub struct DiskInfo {
     pub is_removable: bool,
 }
 
+/// 获取主机名
+pub fn get_hostname() -> Result<String, String> {
+    // 尝试从环境变量获取
+    if let Ok(hostname) = std::env::var("HOSTNAME")
+        .or_else(|_| std::env::var("COMPUTERNAME"))
+    {
+        return Ok(hostname);
+    }
+
+    // Unix 系统使用 hostname 命令
+    #[cfg(unix)]
+    {
+        if let Ok(output) = std::process::Command::new("hostname")
+            .output()
+        {
+            if output.status.success() {
+                return Ok(String::from_utf8_lossy(&output.stdout).trim().to_string());
+            }
+        }
+    }
+
+    // 使用 sysinfo
+    let host_name = System::host_name().unwrap_or_else(|| "Unknown".to_string());
+    Ok(host_name)
+}
+
 pub fn get_disks_info() -> Result<Vec<DiskInfo>, String> {
     let disks = Disks::new_with_refreshed_list();
     let mut disk_list = Vec::new();

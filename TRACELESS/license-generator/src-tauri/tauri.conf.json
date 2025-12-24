@@ -5,7 +5,7 @@
   "identifier": "com.traceless.license-generator",
   "build": {
     "beforeDevCommand": "npm run dev",
-    "devUrl": "http://localhost:5173",
+    "devUrl": "http://localhost:5174",
     "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },
@@ -14,12 +14,12 @@
     "windows": [
       {
         "title": "License Key Generator",
-        "width": 600,
-        "height": 700,
+        "width": 950,
+        "height": 750,
         "resizable": true,
         "center": true,
         "decorations": true,
-        "minWidth": 500,
+        "minWidth": 700,
         "minHeight": 600
       }
     ],

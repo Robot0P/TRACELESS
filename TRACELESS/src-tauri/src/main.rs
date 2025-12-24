@@ -13,7 +13,7 @@ use commands::timestamp_ops::{get_file_timestamps, modify_file_timestamps};
 use commands::anti_analysis_ops::check_environment;
 use commands::scan_ops::{perform_system_scan, cleanup_scan_items};
 use commands::disk_encryption_ops::{check_disk_encryption, enable_disk_encryption, disable_disk_encryption, get_encryption_recommendations};
-use commands::system_info_ops::{get_system_info_api, get_network_speed_api, get_disks_info_api};
+use commands::system_info_ops::{get_system_info_api, get_network_speed_api, get_disks_info_api, get_hostname_api};
 use commands::permission_ops::{check_admin_permission, get_elevation_guide, requires_admin, request_admin_elevation, open_privacy_settings, check_permission_initialized, initialize_permissions, get_permission_status, check_full_disk_access, open_full_disk_access_settings, open_accessibility_settings, run_with_admin, check_system_privileges, run_as_system, run_as_trustedinstaller};
 use commands::settings_ops::{save_settings, load_settings, reset_settings, get_settings_info};
 use commands::scheduled_ops::{get_scheduled_tasks, get_scheduled_task_by_id, create_scheduled_task, update_scheduled_task_cmd, delete_scheduled_task, toggle_scheduled_task, get_custom_rules, get_custom_rule_by_id, create_custom_rule, update_custom_rule_cmd, delete_custom_rule, toggle_custom_rule, get_rule_templates_cmd, get_pending_scheduled_tasks};
@@ -153,6 +153,7 @@ fn main() {
             get_system_info_api,
             get_network_speed_api,
             get_disks_info_api,
+            get_hostname_api,
             // Permission operations
             check_admin_permission,
             get_elevation_guide,

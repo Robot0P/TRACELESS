@@ -160,6 +160,14 @@ export const LicenseErrorCode = {
   InvalidSignature: 'INVALID_SIGNATURE',
   MachineMismatch: 'MACHINE_MISMATCH',
   Expired: 'EXPIRED',
+  AlreadyActivated: 'ALREADY_ACTIVATED',
+  LicenseNotFound: 'LICENSE_NOT_FOUND',
+  LicenseRevoked: 'LICENSE_REVOKED',
+  // 安全相关错误
+  SecurityError: 'SECURITY_ERROR',
+  RequestExpired: 'REQUEST_EXPIRED',
+  ReplayDetected: 'REPLAY_DETECTED',
+  RateLimited: 'RATE_LIMITED',
   Unknown: 'UNKNOWN',
 } as const;
 
@@ -180,6 +188,20 @@ export function getLicenseErrorMessage(code: string | null): string {
       return 'license.errors.MACHINE_MISMATCH';
     case LicenseErrorCode.Expired:
       return 'license.errors.EXPIRED';
+    case LicenseErrorCode.AlreadyActivated:
+      return 'license.errors.ALREADY_ACTIVATED';
+    case LicenseErrorCode.LicenseNotFound:
+      return 'license.errors.LICENSE_NOT_FOUND';
+    case LicenseErrorCode.LicenseRevoked:
+      return 'license.errors.LICENSE_REVOKED';
+    case LicenseErrorCode.SecurityError:
+      return 'license.errors.SECURITY_ERROR';
+    case LicenseErrorCode.RequestExpired:
+      return 'license.errors.REQUEST_EXPIRED';
+    case LicenseErrorCode.ReplayDetected:
+      return 'license.errors.REPLAY_DETECTED';
+    case LicenseErrorCode.RateLimited:
+      return 'license.errors.RATE_LIMITED';
     default:
       return 'license.errors.UNKNOWN';
   }

@@ -1428,6 +1428,13 @@
       "INVALID_SIGNATURE": "License key signature verification failed",
       "MACHINE_MISMATCH": "This license is bound to another device",
       "EXPIRED": "License has expired",
+      "ALREADY_ACTIVATED": "License is already activated on another device. One license can only be bound to one device",
+      "LICENSE_NOT_FOUND": "License not found",
+      "LICENSE_REVOKED": "License has been revoked",
+      "SECURITY_ERROR": "Security verification failed",
+      "REQUEST_EXPIRED": "Request expired, please check system time",
+      "REPLAY_DETECTED": "Abnormal request detected",
+      "RATE_LIMITED": "Too many requests, please try again later",
       "UNKNOWN": "Unknown error, please try again"
     }
   }

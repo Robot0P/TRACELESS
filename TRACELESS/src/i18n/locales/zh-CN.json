@@ -1428,6 +1428,13 @@
       "INVALID_SIGNATURE": "许可证密钥签名验证失败",
       "MACHINE_MISMATCH": "此许可证已绑定到其他设备",
       "EXPIRED": "许可证已过期",
+      "ALREADY_ACTIVATED": "许可证已在其他设备上激活，一个许可证只能绑定一台设备",
+      "LICENSE_NOT_FOUND": "许可证不存在",
+      "LICENSE_REVOKED": "许可证已被撤销",
+      "SECURITY_ERROR": "安全验证失败",
+      "REQUEST_EXPIRED": "请求已过期，请检查系统时间",
+      "REPLAY_DETECTED": "检测到异常请求",
+      "RATE_LIMITED": "请求过于频繁，请稍后重试",
       "UNKNOWN": "未知错误，请重试"
     }
   }

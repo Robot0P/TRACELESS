@@ -1,4 +1,4 @@
-use crate::modules::system_info::{get_system_info, get_network_speed, get_disks_info, SystemInfo, NetworkSpeed, DiskInfo};
+use crate::modules::system_info::{get_system_info, get_network_speed, get_disks_info, get_hostname, SystemInfo, NetworkSpeed, DiskInfo};
 
 #[tauri::command]
 pub async fn get_system_info_api() -> Result<SystemInfo, String> {
@@ -13,4 +13,9 @@ pub async fn get_network_speed_api() -> Result<NetworkSpeed, String> {
 #[tauri::command]
 pub async fn get_disks_info_api() -> Result<Vec<DiskInfo>, String> {
     get_disks_info()
+}
+
+#[tauri::command]
+pub async fn get_hostname_api() -> Result<String, String> {
+    get_hostname()
 }
