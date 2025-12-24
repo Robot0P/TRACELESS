@@ -900,42 +900,55 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    v_stats JSONB;
+    v_total INTEGER;
+    v_unused INTEGER;
+    v_active INTEGER;
+    v_expired INTEGER;
+    v_revoked INTEGER;
+    v_by_tier JSONB;
 BEGIN
-    SELECT jsonb_build_object(
-        'total', COUNT(*),
-        'unused', COUNT(*) FILTER (WHERE status = 'unused'),
-        'active', COUNT(*) FILTER (WHERE status = 'active'),
-        'expired', COUNT(*) FILTER (WHERE status = 'expired'),
-        'revoked', COUNT(*) FILTER (WHERE status = 'revoked'),
-        'by_tier', (
-            SELECT jsonb_object_agg(
-                COALESCE(lt.name, 'unknown'),
-                jsonb_build_object(
-                    'total', tier_stats.total,
-                    'unused', tier_stats.unused,
-                    'active', tier_stats.active,
-                    'expired', tier_stats.expired
-                )
-            )
-            FROM (
-                SELECT
-                    tier,
-                    COUNT(*) as total,
-                    COUNT(*) FILTER (WHERE status = 'unused') as unused,
-                    COUNT(*) FILTER (WHERE status = 'active') as active,
-                    COUNT(*) FILTER (WHERE status = 'expired') as expired
-                FROM licenses
-                GROUP BY tier
-            ) tier_stats
-            LEFT JOIN license_tiers lt ON tier_stats.tier = lt.id
-        )
-    ) INTO v_stats
+    -- 分别计算每个状态的数量
+    SELECT
+        COUNT(*),
+        COUNT(*) FILTER (WHERE status = 'unused'),
+        COUNT(*) FILTER (WHERE status = 'active'),
+        COUNT(*) FILTER (WHERE status = 'expired'),
+        COUNT(*) FILTER (WHERE status = 'revoked')
+    INTO v_total, v_unused, v_active, v_expired, v_revoked
     FROM licenses;
+
+    -- 计算按类型分组的统计
+    SELECT COALESCE(jsonb_object_agg(
+        COALESCE(lt.name, 'unknown'),
+        jsonb_build_object(
+            'total', tier_stats.total,
+            'unused', tier_stats.unused,
+            'active', tier_stats.active,
+            'expired', tier_stats.expired
+        )
+    ), '{}'::JSONB) INTO v_by_tier
+    FROM (
+        SELECT
+            tier,
+            COUNT(*) as total,
+            COUNT(*) FILTER (WHERE status = 'unused') as unused,
+            COUNT(*) FILTER (WHERE status = 'active') as active,
+            COUNT(*) FILTER (WHERE status = 'expired') as expired
+        FROM licenses
+        GROUP BY tier
+    ) tier_stats
+    LEFT JOIN license_tiers lt ON tier_stats.tier = lt.id;
 
     RETURN jsonb_build_object(
         'success', true,
-        'statistics', v_stats
+        'statistics', jsonb_build_object(
+            'total', COALESCE(v_total, 0),
+            'unused', COALESCE(v_unused, 0),
+            'active', COALESCE(v_active, 0),
+            'expired', COALESCE(v_expired, 0),
+            'revoked', COALESCE(v_revoked, 0),
+            'by_tier', v_by_tier
+        )
     );
 END;
 $$;
