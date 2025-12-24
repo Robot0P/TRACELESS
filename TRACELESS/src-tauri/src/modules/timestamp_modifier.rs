@@ -151,9 +151,9 @@ fn modify_timestamps_windows(
 
         let result = SetFileTime(
             handle,
-            creation_time.as_ref(),
-            last_access_time.as_ref(),
-            last_write_time.as_ref(),
+            creation_time.as_ref().map(|t| t as *const FILETIME),
+            last_access_time.as_ref().map(|t| t as *const FILETIME),
+            last_write_time.as_ref().map(|t| t as *const FILETIME),
         );
 
         windows::Win32::Foundation::CloseHandle(handle).ok();

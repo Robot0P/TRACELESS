@@ -1092,7 +1092,7 @@ fn check_user_environment() -> (bool, Option<String>) {
 }
 
 fn check_filesystem_artifacts() -> (bool, Option<String>) {
-    let mut detected = Vec::new();
+    let mut detected: Vec<String> = Vec::new();
 
     // 检查沙箱特有文件
     #[cfg(target_os = "macos")]

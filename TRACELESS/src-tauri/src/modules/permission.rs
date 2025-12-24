@@ -355,7 +355,7 @@ fn check_windows_system_privileges() -> bool {
         let label = &*(buffer.as_ptr() as *const TOKEN_MANDATORY_LABEL);
         let sid = label.Label.Sid;
 
-        if sid.is_null() {
+        if sid.0.is_null() {
             return false;
         }
 
@@ -760,7 +760,7 @@ pub fn is_elevated() -> bool {
                 return false;
             }
 
-            let mut elevation = TOKEN_ELEVATION { TokenIsElevated: BOOL(0) };
+            let mut elevation = TOKEN_ELEVATION { TokenIsElevated: 0 };
             let mut return_length = 0u32;
 
             if GetTokenInformation(
@@ -771,7 +771,7 @@ pub fn is_elevated() -> bool {
                 &mut return_length,
             ).is_ok() {
                 let _ = windows::Win32::Foundation::CloseHandle(token);
-                elevation.TokenIsElevated.as_bool()
+                elevation.TokenIsElevated != 0
             } else {
                 let _ = windows::Win32::Foundation::CloseHandle(token);
                 false
