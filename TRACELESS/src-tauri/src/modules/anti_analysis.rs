@@ -1118,7 +1118,7 @@ fn check_filesystem_artifacts() -> (bool, Option<String>) {
 
         for path in analysis_files {
             if Path::new(path).exists() {
-                detected.push(path);
+                detected.push(path.to_string());
             }
         }
     }
