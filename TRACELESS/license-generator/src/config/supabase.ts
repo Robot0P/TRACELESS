@@ -16,16 +16,20 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
 
 // Check if Supabase is configured
 export function isSupabaseConfigured(): boolean {
+  // 使用变量避免 TypeScript 字面量类型比较警告
+  const url = SUPABASE_URL as string;
   return (
-    SUPABASE_URL !== 'YOUR_SUPABASE_URL' &&
-    SUPABASE_URL.startsWith('https://')
+    url !== 'YOUR_SUPABASE_URL' &&
+    url.startsWith('https://')
   );
 }
 
 // Check if Service Key is configured (for admin operations)
 export function isServiceKeyConfigured(): boolean {
+  // 使用变量避免 TypeScript 字面量类型比较警告
+  const key = SUPABASE_SERVICE_KEY as string;
   return (
-    SUPABASE_SERVICE_KEY !== 'YOUR_SUPABASE_SERVICE_ROLE_KEY' &&
-    SUPABASE_SERVICE_KEY.length > 0
+    key !== 'YOUR_SUPABASE_SERVICE_ROLE_KEY' &&
+    key.length > 0
   );
 }
