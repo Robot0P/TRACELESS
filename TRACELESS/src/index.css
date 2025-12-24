@@ -1,0 +1,684 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 暗色主题变量 (默认) */
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  /* 主题颜色变量 */
+  --bg-primary: #1F2024;
+  --bg-secondary: #18191D;
+  --bg-card: #2B2C30;
+  --bg-hover: #3a3b40;
+  --text-primary: #E0E0E0;
+  --text-secondary: #9CA3AF;
+  --text-muted: #6B7280;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --accent-color: #D9943F;
+  --accent-hover: #c28538;
+  --success-color: #52C41A;
+  --warning-color: #FAAD14;
+  --danger-color: #F5222D;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+/* 亮色主题变量 */
+:root.light-theme,
+body.light-theme {
+  --bg-primary: #F5F5F7;
+  --bg-secondary: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-hover: #E8E8EA;
+  --text-primary: #1F2024;
+  --text-secondary: #4B5563;
+  --text-muted: #9CA3AF;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --accent-color: #C67B2E;
+  --accent-hover: #B06A20;
+  --success-color: #389E0D;
+  --warning-color: #D48806;
+  --danger-color: #CF1322;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+/* 暗色主题样式 */
+:root.dark-theme,
+body.dark-theme {
+  --bg-primary: #1F2024;
+  --bg-secondary: #18191D;
+  --bg-card: #2B2C30;
+  --bg-hover: #3a3b40;
+  --text-primary: #E0E0E0;
+  --text-secondary: #9CA3AF;
+  --text-muted: #6B7280;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --accent-color: #D9943F;
+  --accent-hover: #c28538;
+  --success-color: #52C41A;
+  --warning-color: #FAAD14;
+  --danger-color: #F5222D;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 亮色主题下的特定样式覆盖 */
+.light-theme .bg-slate-950,
+.light-theme .from-slate-950,
+.light-theme .via-slate-900,
+.light-theme .to-slate-950 {
+  --tw-bg-opacity: 1;
+  background-color: var(--bg-primary) !important;
+}
+
+.light-theme .bg-slate-900,
+.light-theme .bg-slate-800,
+.light-theme .bg-slate-800\/50,
+.light-theme .bg-slate-800\/30 {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+}
+
+.light-theme .text-white {
+  color: var(--text-primary) !important;
+}
+
+.light-theme .text-slate-300,
+.light-theme .text-slate-400 {
+  color: var(--text-secondary) !important;
+}
+
+.light-theme .text-slate-500 {
+  color: var(--text-muted) !important;
+}
+
+.light-theme .border-white\/5,
+.light-theme .border-white\/10 {
+  border-color: var(--border-color) !important;
+}
+
+/* 亮色主题下的卡片阴影 */
+.light-theme .shadow-2xl {
+  box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -2px var(--shadow-color) !important;
+}
+
+/* 亮色主题下的滚动条 */
+.light-theme .custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.light-theme .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.light-theme .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* 亮色主题下的渐变背景 */
+.light-theme .bg-gradient-to-br {
+  background: linear-gradient(to bottom right, var(--bg-primary), var(--bg-secondary)) !important;
+}
+
+/* 亮色主题下的 Ant Design 组件 */
+.light-theme .ant-card {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+}
+
+.light-theme .ant-select-selector {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.light-theme .ant-input-number {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.light-theme .ant-btn-default {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.light-theme .ant-divider {
+  border-color: var(--border-color) !important;
+}
+
+/* 亮色主题下的侧边栏 */
+.light-theme .bg-slate-950\/80 {
+  background-color: var(--bg-secondary) !important;
+}
+
+/* 亮色主题下的侧边栏项目悬停状态 */
+.light-theme .hover\:bg-slate-800\/40:hover {
+  background-color: var(--bg-hover) !important;
+}
+
+.light-theme .bg-slate-800\/80 {
+  background-color: var(--bg-hover) !important;
+}
+
+/* 亮色主题下的侧边栏logo区域 */
+.light-theme .from-slate-700\/90,
+.light-theme .to-slate-900\/90 {
+  background-color: var(--bg-card) !important;
+}
+
+/* 亮色主题下的灰色背景 */
+.light-theme .bg-gray-800\/50 {
+  background-color: var(--bg-card) !important;
+}
+
+.light-theme .border-gray-700 {
+  border-color: var(--border-color) !important;
+}
+
+.light-theme .text-gray-400 {
+  color: var(--text-secondary) !important;
+}
+
+.light-theme .bg-gray-700 {
+  background-color: var(--border-color) !important;
+}
+
+/* 亮色主题下的更深灰色背景 */
+.light-theme .bg-slate-900\/50 {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+}
+
+/* 亮色主题下的警告和提示框 */
+.light-theme .bg-amber-500\/10 {
+  background-color: rgba(217, 119, 6, 0.1) !important;
+}
+
+.light-theme .bg-green-500\/10 {
+  background-color: rgba(34, 197, 94, 0.1) !important;
+}
+
+/* 亮色主题下的卡片标题 */
+.light-theme .ant-card-head {
+  border-color: var(--border-color) !important;
+  background-color: var(--bg-card) !important;
+}
+
+.light-theme .ant-card-body {
+  background-color: var(--bg-card) !important;
+}
+
+/* 亮色主题下的开关组件 */
+.light-theme .ant-switch {
+  background-color: rgba(0, 0, 0, 0.25) !important;
+}
+
+.light-theme .ant-switch-checked {
+  background-color: var(--accent-color) !important;
+}
+
+/* 亮色主题下的下拉框 */
+.light-theme .ant-select-dropdown {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+}
+
+.light-theme .ant-select-item {
+  color: var(--text-primary) !important;
+}
+
+.light-theme .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
+  background-color: var(--bg-hover) !important;
+}
+
+.light-theme .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+  background-color: rgba(196, 123, 46, 0.15) !important;
+}
+
+/* 亮色主题下的网格背景 */
+.light-theme [class*="bg-\[linear-gradient"] {
+  opacity: 0.3 !important;
+}
+
+/* 亮色主题下的半透明背景卡片 */
+.light-theme .from-slate-800\/50,
+.light-theme .to-slate-900\/50,
+.light-theme [class*="from-slate-800"],
+.light-theme [class*="to-slate-900"] {
+  background: var(--bg-card) !important;
+}
+
+/* 亮色主题下的渐变按钮背景 - 增强可见度 */
+.light-theme .from-accent\/20,
+.light-theme .to-orange-500\/20,
+.light-theme [class*="from-accent\/"],
+.light-theme [class*="to-orange-500\/"] {
+  --tw-gradient-from: rgba(198, 123, 46, 0.15) !important;
+  --tw-gradient-to: rgba(234, 88, 12, 0.15) !important;
+  background: linear-gradient(to bottom right, rgba(198, 123, 46, 0.15), rgba(234, 88, 12, 0.15)) !important;
+}
+
+.light-theme .from-blue-500\/20,
+.light-theme .to-cyan-500\/20,
+.light-theme [class*="from-blue-500\/"],
+.light-theme [class*="to-cyan-500\/"] {
+  background: linear-gradient(to bottom right, rgba(59, 130, 246, 0.15), rgba(6, 182, 212, 0.15)) !important;
+}
+
+/* 亮色主题下按钮内的文字颜色 */
+.light-theme button .text-white,
+.light-theme .group .text-white {
+  color: var(--text-primary) !important;
+}
+
+/* 亮色主题下按钮内的灰色文字 */
+.light-theme button .text-slate-400,
+.light-theme .group .text-slate-400,
+.light-theme button .text-\[10px\],
+.light-theme .group .text-\[10px\] {
+  color: var(--text-secondary) !important;
+}
+
+/* 亮色主题下的边框颜色 */
+.light-theme .border-accent\/30,
+.light-theme .border-blue-400\/30 {
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+/* 亮色主题下的标签文字 */
+.light-theme .text-xs.text-slate-500 {
+  color: var(--text-muted) !important;
+}
+
+/* 亮色主题下的值文字 */
+.light-theme .text-sm.font-bold {
+  color: var(--text-primary) !important;
+}
+
+/* 保持彩色文字 */
+.light-theme .text-green-400 {
+  color: #16a34a !important;
+}
+
+.light-theme .text-blue-400 {
+  color: #2563eb !important;
+}
+
+.light-theme .text-red-400 {
+  color: #dc2626 !important;
+}
+
+.light-theme .text-accent {
+  color: var(--accent-color) !important;
+}
+
+/* 亮色主题下的背景透明度调整 */
+.light-theme .backdrop-blur-sm {
+  background-color: var(--bg-card) !important;
+}
+
+/* 亮色主题下的渐变背景容器 */
+.light-theme .bg-gradient-to-br.from-slate-800\/50.to-slate-900\/50 {
+  background: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* 亮色主题下的圆角卡片 */
+.light-theme .rounded-2xl.border {
+  border-color: var(--border-color) !important;
+}
+
+.light-theme .rounded-xl.border {
+  border-color: var(--border-color) !important;
+}
+
+/* 亮色主题下保持特定颜色的背景不变 */
+.light-theme .bg-green-500\/10 {
+  background-color: rgba(34, 197, 94, 0.1) !important;
+}
+
+.light-theme .bg-blue-500\/10 {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+}
+
+.light-theme .bg-red-500\/10 {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Typography */
+h1 {
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+.animate-slideInUp {
+  animation: slideInUp 0.5s ease-out;
+}
+
+.animate-slideInDown {
+  animation: slideInDown 0.5s ease-out;
+}
+
+.animate-bounceIn {
+  animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ================================= */
+/* 更多亮色主题样式覆盖 */
+/* ================================= */
+
+/* 亮色主题下的弹窗 */
+.light-theme .ant-modal-content {
+  background-color: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+}
+
+.light-theme .ant-modal-header {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+}
+
+.light-theme .ant-modal-title {
+  color: var(--text-primary) !important;
+}
+
+.light-theme .ant-modal-body {
+  color: var(--text-primary) !important;
+}
+
+/* 亮色主题下的所有页面通用样式 */
+.light-theme .bg-slate-700\/50,
+.light-theme .bg-slate-700\/30 {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* 亮色主题下的彩色背景保持适当饱和度 */
+.light-theme .bg-purple-500\/10,
+.light-theme .bg-purple-500\/20 {
+  background-color: rgba(139, 92, 246, 0.12) !important;
+}
+
+.light-theme .bg-orange-500\/10,
+.light-theme .bg-orange-500\/20 {
+  background-color: rgba(249, 115, 22, 0.12) !important;
+}
+
+.light-theme .bg-cyan-500\/10,
+.light-theme .bg-cyan-500\/20 {
+  background-color: rgba(6, 182, 212, 0.12) !important;
+}
+
+.light-theme .bg-pink-500\/10,
+.light-theme .bg-pink-500\/20 {
+  background-color: rgba(236, 72, 153, 0.12) !important;
+}
+
+.light-theme .bg-indigo-500\/10,
+.light-theme .bg-indigo-500\/20 {
+  background-color: rgba(99, 102, 241, 0.12) !important;
+}
+
+.light-theme .bg-yellow-500\/10,
+.light-theme .bg-yellow-500\/20 {
+  background-color: rgba(234, 179, 8, 0.12) !important;
+}
+
+/* 亮色主题下彩色文字保持可见 */
+.light-theme .text-purple-400 {
+  color: #7c3aed !important;
+}
+
+.light-theme .text-orange-400 {
+  color: #ea580c !important;
+}
+
+.light-theme .text-cyan-400 {
+  color: #0891b2 !important;
+}
+
+.light-theme .text-pink-400 {
+  color: #db2777 !important;
+}
+
+.light-theme .text-indigo-400 {
+  color: #6366f1 !important;
+}
+
+.light-theme .text-yellow-400 {
+  color: #ca8a04 !important;
+}
+
+.light-theme .text-amber-400 {
+  color: #d97706 !important;
+}
+
+.light-theme .text-teal-400 {
+  color: #0d9488 !important;
+}
+
+/* 亮色主题下彩色边框 */
+.light-theme .border-green-500\/20,
+.light-theme .border-green-500\/30 {
+  border-color: rgba(34, 197, 94, 0.3) !important;
+}
+
+.light-theme .border-red-500\/20,
+.light-theme .border-red-500\/30 {
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+.light-theme .border-blue-500\/20,
+.light-theme .border-blue-500\/30 {
+  border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+.light-theme .border-purple-500\/20,
+.light-theme .border-purple-500\/30 {
+  border-color: rgba(139, 92, 246, 0.3) !important;
+}
+
+.light-theme .border-orange-500\/20,
+.light-theme .border-orange-500\/30 {
+  border-color: rgba(249, 115, 22, 0.3) !important;
+}
+
+.light-theme .border-cyan-500\/20,
+.light-theme .border-cyan-500\/30 {
+  border-color: rgba(6, 182, 212, 0.3) !important;
+}
+
+.light-theme .border-amber-500\/20,
+.light-theme .border-amber-500\/30 {
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+.light-theme .border-pink-500\/20,
+.light-theme .border-pink-500\/30 {
+  border-color: rgba(236, 72, 153, 0.3) !important;
+}
+
+.light-theme .border-indigo-500\/20,
+.light-theme .border-indigo-500\/30 {
+  border-color: rgba(99, 102, 241, 0.3) !important;
+}
+
+/* 亮色主题下的警告消息 */
+.light-theme .text-amber-300,
+.light-theme .text-amber-300\/80 {
+  color: #b45309 !important;
+}
+
+.light-theme .text-green-300 {
+  color: #166534 !important;
+}
+
+.light-theme .text-red-300 {
+  color: #b91c1c !important;
+}
+
+/* 亮色主题下的徽章 */
+.light-theme .ant-badge-count {
+  box-shadow: 0 0 0 1px var(--bg-card) !important;
+}
+
+/* 亮色主题下的进度条 */
+.light-theme .ant-progress-bg {
+  background-color: var(--accent-color) !important;
+}
+
+.light-theme .ant-progress-inner {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* 亮色主题下的提示框 */
+.light-theme .ant-tooltip-inner {
+  background-color: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+}
+
+.light-theme .ant-tooltip-arrow::before {
+  background-color: var(--bg-card) !important;
+}
+
+/* 亮色主题下的消息提示 */
+.light-theme .ant-message-notice-content {
+  background-color: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* 亮色主题下的字体单位颜色 */
+.light-theme .font-mono {
+  color: var(--text-primary) !important;
+}
+
+/* 亮色主题下保持特定样式不变 */
+.light-theme .bg-gradient-to-r.from-green-600.to-green-500,
+.light-theme .bg-gradient-to-r.from-accent.to-orange-500 {
+  /* 保持按钮渐变不变 */
+}
+
+/* 亮色主题下的 slate 背景调整 */
+.light-theme [class*="bg-slate-"] {
+  background-color: var(--bg-card) !important;
+}
+
+/* 但保留渐变效果 */
+.light-theme .bg-gradient-to-br[class*="from-slate-"][class*="to-slate-"] {
+  background: linear-gradient(to bottom right, var(--bg-card), var(--bg-secondary)) !important;
+}
+
+/* 亮色主题下动画背景点 */
+.light-theme .animate-float {
+  background-color: rgba(198, 123, 46, 0.15) !important;
+}

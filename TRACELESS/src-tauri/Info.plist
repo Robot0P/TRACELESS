@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>NSAppleEventsUsageDescription</key>
+    <string>Traceless needs access to control other applications for system cleanup operations.</string>
+
+    <key>NSSystemAdministrationUsageDescription</key>
+    <string>Traceless needs administrator privileges to perform secure file deletion and system cleanup.</string>
+
+    <key>NSDesktopFolderUsageDescription</key>
+    <string>Traceless needs access to the Desktop folder to scan and clean files.</string>
+
+    <key>NSDocumentsFolderUsageDescription</key>
+    <string>Traceless needs access to the Documents folder to scan and clean files.</string>
+
+    <key>NSDownloadsFolderUsageDescription</key>
+    <string>Traceless needs access to the Downloads folder to scan and clean files.</string>
+
+    <key>NSRemovableVolumesUsageDescription</key>
+    <string>Traceless needs access to removable volumes to perform secure deletion.</string>
+
+    <key>NSNetworkVolumesUsageDescription</key>
+    <string>Traceless needs access to network volumes for cleanup operations.</string>
+
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>Traceless needs local network access to detect network configuration and clean network traces.</string>
+
+    <key>NSSystemExtensionUsageDescription</key>
+    <string>Traceless requires system extension access for deep system cleanup.</string>
+
+    <key>CFBundleName</key>
+    <string>Traceless</string>
+
+    <key>CFBundleDisplayName</key>
+    <string>Traceless</string>
+
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.utilities</string>
+
+    <key>LSMinimumSystemVersion</key>
+    <string>10.15</string>
+</dict>
+</plist>

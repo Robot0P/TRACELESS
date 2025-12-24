@@ -1,0 +1,30 @@
+# Rust / Cargo
+/target/
+**/*.rs.bk
+**/*.rlib
+
+# Tauri / Node / front-end
+/node_modules/
+/dist/
+/build/
+/out/
+
+# Editor / macOS
+.DS_Store
+.vscode/
+.idea/
+
+# Logs & temp
+*.log
+.tmp/
+
+# Secrets / keys
+*.pem
+*.p12
+*.key
+.env
+.env.*.local
+
+# Other
+/*.zip
+/*.tar.gz
