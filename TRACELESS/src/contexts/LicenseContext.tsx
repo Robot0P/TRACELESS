@@ -426,7 +426,7 @@ export const LicenseProvider: React.FC<LicenseProviderProps> = ({ children }) =>
       } else {
         return {
           success: false,
-          message: getLicenseErrorMessage(result.error_code) || result.error_message || '激活失败',
+          message: getLicenseErrorMessage(result.error_code ?? null) || result.error_message || '激活失败',
         };
       }
     } catch (error) {

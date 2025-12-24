@@ -13,9 +13,12 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 
 // 验证配置是否有效
 export function isSupabaseConfigured(): boolean {
+  // 使用变量避免 TypeScript 字面量类型比较警告
+  const url = SUPABASE_URL as string;
+  const key = SUPABASE_ANON_KEY as string;
   return (
-    SUPABASE_URL !== 'YOUR_SUPABASE_URL' &&
-    SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY' &&
-    SUPABASE_URL.includes('supabase.co')
+    url !== 'YOUR_SUPABASE_URL' &&
+    key !== 'YOUR_SUPABASE_ANON_KEY' &&
+    url.includes('supabase.co')
   );
 }
