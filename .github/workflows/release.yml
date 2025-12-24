@@ -34,16 +34,31 @@ jobs:
             args: '--target x86_64-apple-darwin'
             target: x86_64-apple-darwin
             name: macos-x64
-          # Windows x64
+          # Windows x64 (64-bit)
           - platform: windows-latest
-            args: ''
+            args: '--target x86_64-pc-windows-msvc'
             target: x86_64-pc-windows-msvc
             name: windows-x64
-          # Linux x64
+          # Windows x86 (32-bit)
+          - platform: windows-latest
+            args: '--target i686-pc-windows-msvc'
+            target: i686-pc-windows-msvc
+            name: windows-x86
+          # Windows ARM64
+          - platform: windows-latest
+            args: '--target aarch64-pc-windows-msvc'
+            target: aarch64-pc-windows-msvc
+            name: windows-arm64
+          # Linux x64 (64-bit)
           - platform: ubuntu-22.04
             args: ''
             target: x86_64-unknown-linux-gnu
             name: linux-x64
+          # Linux ARM64 (aarch64)
+          - platform: ubuntu-22.04
+            args: '--target aarch64-unknown-linux-gnu'
+            target: aarch64-unknown-linux-gnu
+            name: linux-arm64
 
     runs-on: ${{ matrix.platform }}
 
@@ -61,22 +76,56 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+          targets: ${{ matrix.target }}
 
-      - name: Install dependencies (Ubuntu)
-        if: matrix.platform == 'ubuntu-22.04'
+      - name: Install dependencies (Ubuntu x64)
+        if: matrix.platform == 'ubuntu-22.04' && matrix.name == 'linux-x64'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
         working-directory: .
 
-      - name: Install OpenSSL (Windows)
-        if: matrix.platform == 'windows-latest'
+      - name: Install dependencies (Ubuntu ARM64 cross-compile)
+        if: matrix.platform == 'ubuntu-22.04' && matrix.name == 'linux-arm64'
+        run: |
+          sudo dpkg --add-architecture arm64
+          sudo sed -i 's/^deb /deb [arch=amd64] /' /etc/apt/sources.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports jammy main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports jammy-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+          sudo apt-get install -y libwebkit2gtk-4.1-dev:arm64 librsvg2-dev:arm64 patchelf
+          echo "PKG_CONFIG_SYSROOT_DIR=/usr/aarch64-linux-gnu" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig" >> $GITHUB_ENV
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+        working-directory: .
+
+      - name: Install OpenSSL (Windows x64)
+        if: matrix.platform == 'windows-latest' && matrix.name == 'windows-x64'
         run: |
           choco install openssl -y
           echo "OPENSSL_DIR=C:\Program Files\OpenSSL-Win64" >> $env:GITHUB_ENV
           echo "OPENSSL_LIB_DIR=C:\Program Files\OpenSSL-Win64\lib\VC\x64\MT" >> $env:GITHUB_ENV
           echo "OPENSSL_INCLUDE_DIR=C:\Program Files\OpenSSL-Win64\include" >> $env:GITHUB_ENV
+        shell: pwsh
+        working-directory: .
+
+      - name: Install OpenSSL (Windows x86)
+        if: matrix.platform == 'windows-latest' && matrix.name == 'windows-x86'
+        run: |
+          choco install openssl --x86 -y
+          echo "OPENSSL_DIR=C:\Program Files (x86)\OpenSSL-Win32" >> $env:GITHUB_ENV
+          echo "OPENSSL_LIB_DIR=C:\Program Files (x86)\OpenSSL-Win32\lib\VC" >> $env:GITHUB_ENV
+          echo "OPENSSL_INCLUDE_DIR=C:\Program Files (x86)\OpenSSL-Win32\include" >> $env:GITHUB_ENV
+        shell: pwsh
+        working-directory: .
+
+      - name: Install OpenSSL (Windows ARM64)
+        if: matrix.platform == 'windows-latest' && matrix.name == 'windows-arm64'
+        run: |
+          choco install openssl -y
+          echo "OPENSSL_DIR=C:\Program Files\OpenSSL-Win64" >> $env:GITHUB_ENV
+          echo "OPENSSL_NO_VENDOR=1" >> $env:GITHUB_ENV
         shell: pwsh
         working-directory: .
 
@@ -96,14 +145,17 @@ jobs:
 
             ### 下载说明 / Download Instructions
 
-            | 平台 Platform | 文件 File | 说明 Description |
-            |---------------|-----------|------------------|
-            | macOS (Apple Silicon) | `Traceless_*_aarch64.dmg` | M1/M2/M3 芯片 |
-            | macOS (Intel) | `Traceless_*_x64.dmg` | Intel 芯片 |
-            | Windows | `Traceless_*_x64-setup.exe` | 安装程序 |
-            | Windows | `Traceless_*_x64.msi` | MSI 安装包 |
-            | Linux | `traceless_*_amd64.deb` | Debian/Ubuntu |
-            | Linux | `traceless_*_amd64.AppImage` | 通用格式 |
+            | 平台 Platform | 架构 Arch | 文件 File | 说明 Description |
+            |---------------|-----------|-----------|------------------|
+            | macOS | ARM64 | `Traceless_*_aarch64.dmg` | M1/M2/M3/M4 芯片 |
+            | macOS | x64 | `Traceless_*_x64.dmg` | Intel 芯片 |
+            | Windows | x64 | `Traceless_*_x64-setup.exe` | 64位系统 |
+            | Windows | x86 | `Traceless_*_x86-setup.exe` | 32位系统 |
+            | Windows | ARM64 | `Traceless_*_arm64-setup.exe` | ARM设备 |
+            | Linux | x64 | `traceless_*_amd64.deb` | 64位 Debian/Ubuntu |
+            | Linux | x64 | `traceless_*_amd64.AppImage` | 64位通用格式 |
+            | Linux | ARM64 | `traceless_*_arm64.deb` | ARM64 Debian/Ubuntu |
+            | Linux | ARM64 | `traceless_*_arm64.AppImage` | ARM64通用格式 |
 
             ### 安装说明 / Installation
 
