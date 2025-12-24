@@ -39,6 +39,11 @@ jobs:
             args: ''
             target: x86_64-pc-windows-msvc
             name: windows-x64
+          # Windows x86 (32-bit)
+          - platform: windows-latest
+            args: '--target i686-pc-windows-msvc'
+            target: i686-pc-windows-msvc
+            name: windows-x86
           # Linux x64 (64-bit)
           - platform: ubuntu-22.04
             args: ''
@@ -96,7 +101,7 @@ jobs:
             | macOS | ARM64 | `Traceless_*_aarch64.dmg` | M1/M2/M3/M4 芯片 |
             | macOS | x64 | `Traceless_*_x64.dmg` | Intel 芯片 |
             | Windows | x64 | `Traceless_*_x64-setup.exe` | 64位系统 (推荐) |
-            | Windows | x64 | `Traceless_*_x64.msi` | MSI 安装包 |
+            | Windows | x86 | `Traceless_*_x86-setup.exe` | 32位系统 |
             | Linux | x64 | `traceless_*_amd64.deb` | Debian/Ubuntu |
             | Linux | x64 | `traceless_*_amd64.AppImage` | 通用格式 |
 
