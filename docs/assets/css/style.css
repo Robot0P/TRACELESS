@@ -781,6 +781,12 @@ section {
     color: var(--color-text);
 }
 
+.os-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
 .os-icon.windows { color: #00adef; }
 .os-icon.linux { color: #fcc624; }
 
