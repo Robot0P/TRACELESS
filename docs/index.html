@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traceless - Advanced Privacy Protection</title>
+    <meta name="description" content="Traceless is a cross-platform privacy protection and anti-forensics toolkit. Secure your digital footprint with military-grade data sanitization.">
+    <meta name="keywords" content="privacy, security, anti-forensics, data protection, file shredder, Tauri">
+    <meta property="og:title" content="Traceless - Advanced Privacy Protection">
+    <meta property="og:description" content="Cross-platform privacy protection and anti-forensics toolkit">
+    <meta property="og:type" content="website">
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L4 6V12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12V6L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <span>Traceless</span>
+            </a>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#download">Download</a>
+                <a href="#docs">Documentation</a>
+                <a href="https://github.com/Robot0P/TRACELESS" target="_blank">GitHub</a>
+            </div>
+            <div class="nav-actions">
+                <button class="lang-switch" onclick="toggleLanguage()">中文</button>
+                <a href="#download" class="btn btn-primary">Download</a>
+            </div>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                <span>v1.0.0 Now Available</span>
+            </div>
+            <h1 class="hero-title">
+                <span class="gradient-text">Vanish</span> Without
+                <br>a <span class="gradient-text">Trace</span>
+            </h1>
+            <p class="hero-subtitle">
+                Advanced cross-platform privacy protection toolkit with military-grade
+                data sanitization. Take control of your digital footprint.
+            </p>
+            <div class="hero-actions">
+                <a href="#download" class="btn btn-primary btn-lg">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7,10 12,15 17,10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Download Now
+                </a>
+                <a href="#features" class="btn btn-outline btn-lg">
+                    Explore Features
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-value">5+</span>
+                    <span class="stat-label">Platforms</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-value">10+</span>
+                    <span class="stat-label">Security Modules</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-value">100%</span>
+                    <span class="stat-label">Open Source</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="app-preview">
+                <div class="app-window">
+                    <div class="window-header">
+                        <div class="window-controls">
+                            <span class="control red"></span>
+                            <span class="control yellow"></span>
+                            <span class="control green"></span>
+                        </div>
+                        <span class="window-title">Traceless</span>
+                    </div>
+                    <div class="window-content">
+                        <div class="dashboard-preview">
+                            <div class="sidebar-preview">
+                                <div class="menu-item active"></div>
+                                <div class="menu-item"></div>
+                                <div class="menu-item"></div>
+                                <div class="menu-item"></div>
+                                <div class="menu-item"></div>
+                            </div>
+                            <div class="main-preview">
+                                <div class="card-grid">
+                                    <div class="preview-card"></div>
+                                    <div class="preview-card"></div>
+                                    <div class="preview-card"></div>
+                                    <div class="preview-card"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="floating-card card-1">
+                    <div class="card-icon shield"></div>
+                    <span>Protected</span>
+                </div>
+                <div class="floating-card card-2">
+                    <div class="card-icon lock"></div>
+                    <span>Encrypted</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Features</span>
+                <h2 class="section-title">Complete Privacy <span class="gradient-text">Arsenal</span></h2>
+                <p class="section-subtitle">
+                    Everything you need to protect your digital privacy in one powerful toolkit
+                </p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card featured">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 6v6l4 2"/>
+                        </svg>
+                    </div>
+                    <h3>System Scan</h3>
+                    <p>Deep scan your system to identify privacy risks, tracking files, and digital traces that could compromise your security.</p>
+                    <span class="feature-tag">Free</span>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18"/>
+                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                            <line x1="10" y1="11" x2="10" y2="17"/>
+                            <line x1="14" y1="11" x2="14" y2="17"/>
+                        </svg>
+                    </div>
+                    <h3>File Shredder</h3>
+                    <p>Securely delete files with military-grade multi-pass overwriting algorithms. Unrecoverable by any means.</p>
+                    <span class="feature-tag">Free</span>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                    </div>
+                    <h3>Timestamp Modifier</h3>
+                    <p>Modify file creation, modification, and access timestamps to protect your activity timeline.</p>
+                    <span class="feature-tag">Free</span>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            <path d="M12 8v4"/>
+                            <path d="M12 16h.01"/>
+                        </svg>
+                    </div>
+                    <h3>Anti-Analysis</h3>
+                    <p>Detect virtual machines, debuggers, and analysis environments to prevent forensic investigation.</p>
+                    <span class="feature-tag">Free</span>
+                </div>
+
+                <div class="feature-card pro">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 12H2"/>
+                            <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+                            <line x1="6" y1="16" x2="6.01" y2="16"/>
+                            <line x1="10" y1="16" x2="10.01" y2="16"/>
+                        </svg>
+                    </div>
+                    <h3>Memory Cleanup</h3>
+                    <p>Clear sensitive data from system memory and RAM to prevent cold boot attacks and memory forensics.</p>
+                    <span class="feature-tag pro">Pro</span>
+                </div>
+
+                <div class="feature-card pro">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/>
+                            <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/>
+                            <circle cx="12" cy="12" r="2"/>
+                            <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/>
+                            <path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/>
+                        </svg>
+                    </div>
+                    <h3>Network Cleanup</h3>
+                    <p>Erase network traces, DNS cache, connection history, and browser data from your system.</p>
+                    <span class="feature-tag pro">Pro</span>
+                </div>
+
+                <div class="feature-card pro">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14,2 14,8 20,8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10,9 9,9 8,9"/>
+                        </svg>
+                    </div>
+                    <h3>System Logs</h3>
+                    <p>Securely clean system and application logs that could reveal your activities and usage patterns.</p>
+                    <span class="feature-tag pro">Pro</span>
+                </div>
+
+                <div class="feature-card pro">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                    </div>
+                    <h3>Disk Encryption</h3>
+                    <p>Encrypt sensitive files and folders with AES-256 encryption to protect your most valuable data.</p>
+                    <span class="feature-tag pro">Pro</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack Section -->
+    <section class="tech-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Technology</span>
+                <h2 class="section-title">Built with <span class="gradient-text">Modern Tech</span></h2>
+                <p class="section-subtitle">
+                    Powered by cutting-edge technologies for maximum performance and security
+                </p>
+            </div>
+
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <div class="tech-logo">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M14.23 12.004a2.236 2.236 0 0 1-2.235 2.236 2.236 2.236 0 0 1-2.236-2.236 2.236 2.236 0 0 1 2.235-2.236 2.236 2.236 0 0 1 2.236 2.236zm2.648-10.69c-1.346 0-3.107.96-4.888 2.622-1.78-1.653-3.542-2.602-4.887-2.602-.41 0-.783.093-1.106.278-1.375.793-1.683 3.264-.973 6.365C1.98 8.917 0 10.42 0 12.004c0 1.59 1.99 3.097 5.043 4.03-.704 3.113-.39 5.588.988 6.38.32.187.69.275 1.102.275 1.345 0 3.107-.96 4.888-2.624 1.78 1.654 3.542 2.603 4.887 2.603.41 0 .783-.09 1.106-.275 1.374-.792 1.683-3.263.973-6.365C22.02 15.096 24 13.59 24 12.004c0-1.59-1.99-3.097-5.043-4.032.704-3.11.39-5.587-.988-6.38-.318-.184-.688-.277-1.092-.278zm-.005 1.09v.006c.225 0 .406.044.558.127.666.382.955 1.835.73 3.704-.054.46-.142.945-.25 1.44-.96-.236-2.006-.417-3.107-.534-.66-.905-1.345-1.727-2.035-2.447 1.592-1.48 3.087-2.292 4.105-2.295zm-9.77.02c1.012 0 2.514.808 4.11 2.28-.686.72-1.37 1.537-2.02 2.442-1.107.117-2.154.298-3.113.538-.112-.49-.195-.964-.254-1.42-.23-1.868.054-3.32.714-3.707.19-.09.4-.127.563-.132zm4.882 3.05c.455.468.91.992 1.36 1.564-.44-.02-.89-.034-1.345-.034-.46 0-.915.01-1.36.034.44-.572.895-1.096 1.345-1.565zM12 8.1c.74 0 1.477.034 2.202.093.406.582.802 1.203 1.183 1.86.372.64.71 1.29 1.018 1.946-.308.655-.646 1.31-1.013 1.95-.38.66-.773 1.288-1.18 1.87-.728.063-1.466.098-2.21.098-.74 0-1.477-.035-2.202-.093-.406-.582-.802-1.204-1.183-1.86-.372-.64-.71-1.29-1.018-1.946.303-.657.646-1.313 1.013-1.954.38-.66.773-1.286 1.18-1.868.728-.064 1.466-.098 2.21-.098zm-3.635.254c-.24.377-.48.763-.704 1.16-.225.39-.435.782-.635 1.174-.265-.656-.49-1.31-.676-1.947.64-.15 1.315-.283 2.015-.386zm7.26 0c.695.103 1.365.23 2.006.387-.18.632-.405 1.282-.66 1.933-.2-.39-.41-.783-.64-1.174-.225-.392-.465-.774-.705-1.146zm3.063.675c.484.15.944.317 1.375.498 1.732.74 2.852 1.708 2.852 2.476-.005.768-1.125 1.74-2.857 2.475-.42.18-.88.342-1.355.493-.28-.958-.646-1.956-1.1-2.98.45-1.017.81-2.01 1.085-2.964zm-13.395.004c.278.96.645 1.957 1.1 2.98-.45 1.017-.812 2.01-1.086 2.964-.484-.15-.944-.318-1.37-.5-1.732-.737-2.852-1.706-2.852-2.474 0-.768 1.12-1.742 2.852-2.476.42-.18.88-.342 1.356-.494zm11.678 4.28c.265.657.49 1.312.676 1.948-.64.157-1.316.29-2.016.39.24-.375.48-.762.705-1.158.225-.39.435-.788.636-1.18zm-9.945.02c.2.392.41.783.64 1.175.23.39.465.772.705 1.143-.695-.102-1.365-.23-2.006-.386.18-.63.406-1.282.66-1.933zM17.92 16.32c.112.493.2.968.254 1.423.23 1.868-.054 3.32-.714 3.708-.147.09-.338.128-.563.128-1.012 0-2.514-.807-4.11-2.28.686-.72 1.37-1.536 2.02-2.44 1.107-.118 2.154-.3 3.113-.54zm-11.83.01c.96.234 2.006.415 3.107.532.66.905 1.345 1.727 2.035 2.446-1.595 1.483-3.092 2.295-4.11 2.295-.22-.005-.406-.05-.553-.132-.666-.38-.955-1.834-.73-3.703.054-.46.142-.944.25-1.438zm4.56.64c.44.02.89.034 1.345.034.46 0 .915-.01 1.36-.034-.44.572-.895 1.095-1.345 1.565-.455-.47-.91-.993-1.36-1.565z"/>
+                        </svg>
+                    </div>
+                    <h4>React 19</h4>
+                    <p>Modern UI Framework</p>
+                </div>
+
+                <div class="tech-card">
+                    <div class="tech-logo rust">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M23.8346 11.7033l-1.0073-.6236a13.7268 13.7268 0 00-.0283-.2936l.8656-.8069a.3483.3483 0 00-.1154-.578l-1.1066-.414a8.4958 8.4958 0 00-.087-.2856l.6904-.9587a.3475.3475 0 00-.2154-.5488l-1.1663-.1894a9.3574 9.3574 0 00-.1407-.2622l.49-1.0761a.3475.3475 0 00-.3079-.4986l-1.1845.0416a6.7396 6.7396 0 00-.1873-.2268l.2723-1.153a.3475.3475 0 00-.3867-.4288l-1.1602.2727a10.8177 10.8177 0 00-.2242-.181l.0467-1.1846a.3475.3475 0 00-.4506-.3387l-1.0937.4944c-.0809-.0516-.1628-.1016-.2455-.1502l-.1837-1.1672a.3475.3475 0 00-.4983-.2296l-.9856.7003a11.8526 11.8526 0 00-.2593-.1092l-.4047-1.1117a.3483.3483 0 00-.5282-.1048l-.8435.8717a6.5765 6.5765 0 00-.2653-.0603l-.6116-1.0117a.3475.3475 0 00-.5765.0185l-.6733 1.0018a11.7656 11.7656 0 00-.2653.0603l-.8443-.8717a.3475.3475 0 00-.5275.1048l-.4054 1.1117a8.6064 8.6064 0 00-.2586.1092l-.9863-.7003a.3483.3483 0 00-.499.2296l-.1829 1.1672a9.0739 9.0739 0 00-.2463.1502l-1.0944-.4944a.3467.3467 0 00-.4499.3387l.0467 1.1846a7.0758 7.0758 0 00-.2235.181l-1.1609-.2727a.3475.3475 0 00-.386.4288l.2716 1.153a7.6053 7.6053 0 00-.1866.2268l-1.1852-.0416a.3475.3475 0 00-.3072.4986l.4892 1.0761c-.0483.0872-.0952.1744-.1407.2622l-1.1656.1894a.3475.3475 0 00-.2161.5488l.6896.9587a9.4076 9.4076 0 00-.0862.2856l-1.1074.414a.3483.3483 0 00-.1146.5765l.8649.8069c-.0118.0981-.022.1962-.0291.2944l-1.0065.6236a.3475.3475 0 000 .5765l1.0065.6236c.0071.0974.0173.1955.0291.2936l-.8649.8077a.3475.3475 0 00.1146.5765l1.1074.414c.0269.0964.0553.1921.0862.2864l-.6896.9579a.3483.3483 0 00.2153.5496l1.1664.1886c.0455.0886.0924.1758.1407.2622l-.4892 1.0769a.3475.3475 0 00.3072.4979l1.1852-.0416c.0601.0772.1225.1537.1866.2276l-.2716 1.1522a.3475.3475 0 00.386.4288l1.1609-.2727c.0735.0621.1482.1226.2235.181l-.0467 1.1854a.3475.3475 0 00.4499.3379l1.0944-.4936c.0814.0516.1632.1016.2463.1494l.1829 1.168a.3483.3483 0 00.499.2288l.9863-.6995c.0855.0378.1718.0748.2586.1092l.4054 1.1109a.3475.3475 0 00.5765.1063l.8443-.8709c.0879.0213.1765.0406.2653.0595l.6733 1.0026a.3475.3475 0 00.5765-.0177l.6116-1.0126c.0896-.0181.1781-.0374.2653-.0587l.8435.8709a.3475.3475 0 00.5765-.1063l.4047-1.1109c.0877-.0336.174-.0714.2593-.1092l.9856.6987a.3475.3475 0 00.4983-.2288l.1837-1.168c.0834-.0478.1653-.0978.2462-.1494l1.0937.4936a.3475.3475 0 00.4506-.3379l-.0467-1.1854c.0744-.0584.1498-.1189.2242-.181l1.1602.2727a.3475.3475 0 00.3867-.4288l-.2723-1.1522c.0648-.0739.1273-.1504.1873-.2276l1.1845.0416a.3475.3475 0 00.3079-.4979l-.49-1.0769c.0483-.0864.0952-.1736.1407-.2622l1.1663-.1886a.3475.3475 0 00.2154-.5496l-.6904-.9579c.0316-.0943.06-.19.087-.2864l1.1066-.414a.3475.3475 0 00.1154-.5765l-.8656-.8077c.0118-.0981.0213-.1962.0283-.2936l1.0073-.6236a.3475.3475 0 000-.5765zm-6.7256 8.0639a1.4998 1.4998 0 01-2.1026 0 1.4849 1.4849 0 010-2.0966 1.4998 1.4998 0 012.1026 0 1.4857 1.4857 0 010 2.0966zm-1.0509-4.9496a1.495 1.495 0 01-.9701-.3584l-4.8604 2.8SEK-1.4357c-.1146-.3681-.446-.6374-.8389-.6374a.8844.8844 0 00-.6316 1.4981l.0827 4.8604c-.3703.1862-.6291.5498-.6291.974 0 .6052.4915 1.096 1.096 1.096.6053 0 1.096-.4908 1.096-1.096 0-.4241-.2588-.7878-.6291-.974l.0835-4.8604a.8844.8844 0 00-.548-1.4981c-.3929 0-.7243.2693-.8389.6374l-1.4357-.8284-4.8596-2.8052a1.4965 1.4965 0 01-.9709.3584c-.8273 0-1.4998-.6716-1.4998-1.4998 0-.8274.6725-1.4998 1.4998-1.4998.3712 0 .7126.1379.9764.3654l4.8373-2.7959 1.4705-.8493a.8852.8852 0 00.0764-1.0565c-.2452-.3477-.7208-.4306-1.0685-.1854l-1.4753.8521-4.8216-2.7868a1.4965 1.4965 0 01-.9953.3812c-.8273 0-1.4998-.6725-1.4998-1.4998 0-.8282.6725-1.4998 1.4998-1.4998.5624 0 1.0526.3117 1.3091.7705l4.8604 2.8052 1.4357-.8284c.1146.3681.446.6374.8389.6374a.8844.8844 0 00.6316-1.4981l-.0827-4.8604c.3703-.1862.6291-.5498.6291-.974 0-.6052-.4915-1.096-1.096-1.096-.6053 0-1.096.4908-1.096 1.096 0 .4241.2588.7878.6291.974l-.0835 4.8604a.8844.8844 0 00.548 1.4981c.3929 0 .7243-.2693.8389-.6374l1.4357.8284 4.8596 2.8052a1.4965 1.4965 0 01.9709-.3584c.8273 0 1.4998.6716 1.4998 1.4998 0 .8282-.6725 1.4998-1.4998 1.4998z"/>
+                        </svg>
+                    </div>
+                    <h4>Rust</h4>
+                    <p>Memory-Safe Backend</p>
+                </div>
+
+                <div class="tech-card">
+                    <div class="tech-logo tauri">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M13.912 0c4.746 0 8.593 3.847 8.593 8.593 0 1.56-.418 3.02-1.147 4.28a8.466 8.466 0 0 1-1.593 1.969c-1.724 1.597-4.02 2.575-6.543 2.575-.505 0-1.001-.037-1.486-.108a8.558 8.558 0 0 1-1.853-.439c-.324.117-.67.201-1.03.248a4.778 4.778 0 0 1-1.67-.064 4.719 4.719 0 0 1-2.49-1.423c-.613-.662-1.022-1.5-1.162-2.42a4.68 4.68 0 0 1 .24-2.276c.08-.229.178-.45.294-.659a4.672 4.672 0 0 1-.294-.658 4.68 4.68 0 0 1-.24-2.277c.14-.92.549-1.758 1.163-2.42a4.719 4.719 0 0 1 2.489-1.423 4.778 4.778 0 0 1 1.67-.064c.36.047.706.131 1.03.248.594-.208 1.216-.353 1.858-.44.485-.07.981-.108 1.486-.108"/>
+                        </svg>
+                    </div>
+                    <h4>Tauri 2.x</h4>
+                    <p>Native Performance</p>
+                </div>
+
+                <div class="tech-card">
+                    <div class="tech-logo typescript">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M1.125 0C.502 0 0 .502 0 1.125v21.75C0 23.498.502 24 1.125 24h21.75c.623 0 1.125-.502 1.125-1.125V1.125C24 .502 23.498 0 22.875 0zm17.363 9.75c.612 0 1.154.037 1.627.111a6.38 6.38 0 0 1 1.306.34v2.458a3.95 3.95 0 0 0-.643-.361 5.093 5.093 0 0 0-.717-.26 5.453 5.453 0 0 0-1.426-.2c-.3 0-.573.028-.819.086a2.1 2.1 0 0 0-.623.242c-.17.104-.3.229-.393.374a.888.888 0 0 0-.14.49c0 .196.053.373.156.529.104.156.252.304.443.444s.423.276.696.41c.273.135.582.274.926.416.47.197.892.407 1.266.628.374.222.695.473.963.753.268.279.472.598.614.957.142.359.214.776.214 1.253 0 .657-.125 1.21-.373 1.656a3.033 3.033 0 0 1-1.012 1.085 4.38 4.38 0 0 1-1.487.596c-.566.12-1.163.18-1.79.18a9.916 9.916 0 0 1-1.84-.164 5.544 5.544 0 0 1-1.512-.493v-2.63a5.033 5.033 0 0 0 3.237 1.2c.333 0 .624-.03.872-.09.249-.06.456-.144.623-.25.166-.108.29-.234.373-.38a1.023 1.023 0 0 0-.074-1.089 2.12 2.12 0 0 0-.537-.5 5.597 5.597 0 0 0-.807-.444 27.72 27.72 0 0 0-1.007-.436c-.918-.383-1.602-.852-2.053-1.405-.45-.553-.676-1.222-.676-2.005 0-.614.123-1.141.369-1.582.246-.441.58-.804 1.004-1.089a4.494 4.494 0 0 1 1.47-.629 7.536 7.536 0 0 1 1.77-.201zm-15.113.188h9.563v2.166H9.506v9.646H6.789v-9.646H3.375z"/>
+                        </svg>
+                    </div>
+                    <h4>TypeScript</h4>
+                    <p>Type-Safe Code</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section id="download" class="download-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Download</span>
+                <h2 class="section-title">Get <span class="gradient-text">Traceless</span></h2>
+                <p class="section-subtitle">
+                    Available for all major platforms. Choose your version below.
+                </p>
+            </div>
+
+            <div class="download-grid">
+                <div class="download-card">
+                    <div class="os-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                        </svg>
+                    </div>
+                    <h3>macOS</h3>
+                    <div class="download-options">
+                        <a href="https://github.com/Robot0P/TRACELESS/releases/latest" class="download-btn">
+                            <span>Apple Silicon (M1/M2/M3/M4)</span>
+                            <span class="file-type">.dmg</span>
+                        </a>
+                        <a href="https://github.com/Robot0P/TRACELESS/releases/latest" class="download-btn">
+                            <span>Intel (x64)</span>
+                            <span class="file-type">.dmg</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="download-card">
+                    <div class="os-icon windows">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/>
+                        </svg>
+                    </div>
+                    <h3>Windows</h3>
+                    <div class="download-options">
+                        <a href="https://github.com/Robot0P/TRACELESS/releases/latest" class="download-btn">
+                            <span>64-bit (x64)</span>
+                            <span class="file-type">.exe</span>
+                        </a>
+                        <a href="https://github.com/Robot0P/TRACELESS/releases/latest" class="download-btn">
+                            <span>32-bit (x86)</span>
+                            <span class="file-type">.exe</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="download-card">
+                    <div class="os-icon linux">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12.504 0c-.155 0-.311.001-.465.003-.653.014-1.359.074-1.995.205-.668.136-1.297.36-1.752.7-.456.34-.844.854-1.046 1.504-.204.654-.268 1.43-.219 2.322.052.937.229 1.974.555 3.06.327 1.09.753 2.225 1.258 3.351-.172.162-.346.32-.526.473-.584.495-1.222.968-1.829 1.485-.606.517-1.178 1.08-1.595 1.7-.417.62-.694 1.3-.694 2.078 0 .507.147.975.38 1.422.234.448.58.858.988 1.227.814.74 1.883 1.316 3.048 1.715 1.166.4 2.424.628 3.638.712 1.214.085 2.386.027 3.393-.226 1.007-.252 1.861-.7 2.407-1.446.545-.747.8-1.68.8-2.698 0-.637-.148-1.307-.382-1.966-.234-.659-.56-1.307-.942-1.9-.765-1.186-1.769-2.147-2.77-2.944.387-.815.732-1.641 1.022-2.458.284-.8.526-1.595.694-2.367.168-.77.262-1.515.253-2.208-.01-.7-.128-1.35-.43-1.893-.303-.544-.78-.969-1.392-1.215-.61-.246-1.344-.342-2.157-.311-.43.016-.875.053-1.331.11zm-.024 1.004c.397-.008.79.01 1.168.05.475.05.925.141 1.318.304.393.163.723.397.929.715.206.318.297.735.308 1.28.01.551-.077 1.209-.234 1.922-.157.714-.386 1.475-.66 2.246-.276.772-.596 1.554-.947 2.325-.056-.042-.114-.082-.172-.12-.627-.415-1.31-.783-2.03-1.102-.722-.32-1.478-.59-2.245-.818-.768-.229-1.548-.415-2.322-.561.336-.805.633-1.595.87-2.356.245-.787.425-1.545.517-2.249.091-.704.089-1.35-.042-1.886-.13-.537-.398-.955-.833-1.22-.434-.265-1.019-.366-1.715-.284-.7.083-1.503.35-2.384.805-.881.456-1.839 1.1-2.842 1.912-.165-.34-.31-.677-.431-1.01-.288-.795-.481-1.584-.519-2.32-.037-.737.07-1.417.355-1.964.284-.548.753-.96 1.376-1.196.624-.235 1.407-.295 2.327-.175.921.12 1.968.425 3.101.898 1.134.474 2.349 1.115 3.602 1.9l-.006-.004c-.226-.154-.451-.302-.675-.444-.447-.285-.88-.549-1.297-.788-.417-.239-.82-.455-1.205-.645-.387-.19-.756-.353-1.107-.49zm-.996 8.585c.674.227 1.336.495 1.975.802.639.307 1.256.654 1.838 1.037.583.384 1.13.802 1.633 1.253.503.45.96.935 1.357 1.448.397.513.733 1.052.991 1.61.258.557.437 1.134.507 1.712.07.578.028 1.156-.138 1.692-.166.535-.456 1.026-.888 1.417-.432.39-1.005.67-1.685.818-.68.148-1.47.164-2.337.048-.867-.116-1.81-.364-2.785-.736-.974-.371-1.977-.866-2.961-1.473-.491-.302-.968-.633-1.422-.99-.455-.357-.888-.74-1.292-1.147-.404-.406-.778-.837-1.11-1.289-.332-.451-.621-.922-.854-1.408-.233-.485-.41-.986-.511-1.492-.1-.507-.123-1.018-.05-1.525.073-.506.246-1.007.535-1.478.289-.471.694-.912 1.224-1.306.53-.394 1.186-.741 1.967-1.03.78-.288 1.685-.518 2.706-.678 1.02-.16 2.159-.25 3.388-.259.613-.005 1.245.01 1.891.047l.003-.002c-.616-.054-1.223-.086-1.818-.094zm3.96 9.39c-.09.004-.177.014-.263.028-.344.056-.652.182-.91.361-.259.18-.468.41-.618.676-.15.266-.24.567-.26.885-.02.318.032.652.166.98.135.328.35.65.65.945.3.294.686.56 1.157.778.47.219 1.026.388 1.652.49.626.102 1.32.138 2.063.1.744-.038 1.538-.15 2.36-.343.821-.192 1.67-.466 2.523-.824.853-.357 1.71-.799 2.546-1.327.097-.063.193-.127.287-.193-.185-.05-.37-.097-.556-.141-.744-.176-1.502-.31-2.263-.403-.761-.093-1.524-.144-2.28-.153-.755-.01-1.502.022-2.23.097-.729.074-1.439.19-2.12.35-.683.16-1.337.363-1.952.612-.203.082-.4.17-.59.262-.095.046-.187.094-.277.143l-.083.046c.06-.005.122-.008.183-.01.308-.008.614.016.91.07.297.055.584.138.855.249.27.11.523.249.754.412.23.163.438.35.618.558.18.209.333.44.455.689.121.248.21.515.262.793.053.278.07.565.05.854-.02.29-.077.58-.172.866-.094.286-.224.566-.392.833-.167.267-.37.52-.607.752-.238.232-.509.443-.812.625-.304.183-.639.338-1.002.459-.364.121-.756.208-1.172.258-.416.05-.857.063-1.317.036-.46-.027-.939-.094-1.43-.2-.49-.106-.993-.251-1.5-.433-.508-.182-1.02-.401-1.526-.655-.506-.255-1.006-.545-1.492-.87-.487-.325-.96-.684-1.409-1.077-.449-.393-.873-.82-1.264-1.28-.39-.459-.747-.951-1.058-1.473-.312-.523-.58-1.076-.79-1.655-.21-.58-.363-1.185-.448-1.81-.084-.626-.1-1.272-.035-1.93.066-.66.21-1.333.44-2.01.23-.678.545-1.359.951-2.033.406-.675.904-1.343 1.497-1.994.594-.651 1.283-1.285 2.07-1.893.787-.608 1.672-1.19 2.654-1.735.982-.545 2.061-1.052 3.234-1.51 1.172-.46 2.439-.87 3.794-1.223l.012.012c-.59.253-1.166.526-1.727.817-.56.29-1.106.6-1.634.928-.528.327-1.039.672-1.53 1.034-.49.361-.961.74-1.41 1.134-.449.394-.876.804-1.28 1.228-.402.424-.781.862-1.133 1.313-.353.451-.678.915-.975 1.39-.297.474-.565.96-.802 1.454-.237.494-.443.995-.618 1.504-.174.508-.315 1.022-.422 1.54-.107.517-.18 1.038-.216 1.559-.036.52-.036 1.041 0 1.559.037.517.11 1.032.221 1.54.11.509.256 1.01.439 1.501.182.491.402.972.657 1.437.255.466.547.916.872 1.348.326.432.686.845 1.08 1.236.393.39.818.76 1.274 1.104.456.344.942.662 1.455.953.512.29 1.051.552 1.613.784.561.232 1.145.434 1.746.606.601.172 1.22.313 1.85.42.632.108 1.277.183 1.93.223.652.04 1.312.045 1.975.015.662-.03 1.326-.095 1.987-.196.661-.1 1.318-.235 1.966-.406.648-.17 1.286-.375 1.909-.617.622-.24 1.228-.517 1.813-.829.584-.312 1.145-.659 1.679-1.04.533-.382 1.039-.798 1.513-1.248.474-.45.914-.933 1.316-1.448.402-.515.767-1.063 1.09-1.64.322-.577.602-1.183.835-1.816.234-.632.42-1.29.556-1.97.135-.68.22-1.382.25-2.1.03-.72.006-1.454-.072-2.2-.078-.747-.21-1.506-.398-2.27-.187-.764-.428-1.533-.724-2.3-.297-.768-.648-1.533-1.055-2.29-.407-.756-.869-1.503-1.387-2.232-.518-.73-1.091-1.444-1.72-2.135-.629-.69-1.314-1.358-2.052-1.995-.738-.637-1.53-1.244-2.375-1.813-.845-.57-1.742-1.1-2.69-1.586-.947-.486-1.945-.927-2.987-1.318-1.042-.392-2.129-.734-3.254-1.024-1.126-.289-2.289-.527-3.485-.708-1.196-.181-2.424-.306-3.679-.373-1.255-.066-2.536-.075-3.835-.023-1.298.052-2.614.163-3.94.334-1.325.17-2.66.399-3.998.689-1.337.29-2.677.64-4.011 1.053-1.333.413-2.66.888-3.973 1.427-1.312.539-2.61 1.14-3.883 1.807-1.272.666-2.52 1.396-3.735 2.191-1.214.795-2.394 1.656-3.533 2.582-1.138.926-2.234 1.917-3.28 2.974-1.045 1.057-2.04 2.18-2.973 3.367-.933 1.186-1.805 2.437-2.607 3.75-.802 1.314-1.534 2.69-2.185 4.127-.651 1.437-1.22 2.935-1.698 4.49-.478 1.555-.864 3.168-1.148 4.834-.284 1.666-.466 3.386-.534 5.155-.068 1.77-.023 3.588.136 5.451.16 1.863.434 3.77.822 5.714.387 1.944.888 3.925 1.502 5.937.614 2.012 1.34 4.055 2.179 6.122.84 2.067 1.791 4.159 2.854 6.27 1.063 2.11 2.238 4.24 3.523 6.382 1.285 2.142 2.68 4.297 4.186 6.457 1.506 2.16 3.12 4.326 4.843 6.49"/>
+                        </svg>
+                    </div>
+                    <h3>Linux</h3>
+                    <div class="download-options">
+                        <a href="https://github.com/Robot0P/TRACELESS/releases/latest" class="download-btn">
+                            <span>Debian / Ubuntu (64-bit)</span>
+                            <span class="file-type">.deb</span>
+                        </a>
+                        <a href="https://github.com/Robot0P/TRACELESS/releases/latest" class="download-btn">
+                            <span>AppImage (Universal)</span>
+                            <span class="file-type">.AppImage</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="source-code">
+                <p>Or build from source:</p>
+                <div class="code-block">
+                    <code>git clone https://github.com/Robot0P/TRACELESS.git && cd TRACELESS && npm install && npm run tauri:build</code>
+                    <button class="copy-btn" onclick="copyCode(this)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Documentation Section -->
+    <section id="docs" class="docs-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Documentation</span>
+                <h2 class="section-title">Quick <span class="gradient-text">Start</span></h2>
+            </div>
+
+            <div class="docs-grid">
+                <div class="doc-card">
+                    <div class="doc-number">01</div>
+                    <h3>Install</h3>
+                    <p>Download the appropriate version for your platform and run the installer.</p>
+                </div>
+                <div class="doc-card">
+                    <div class="doc-number">02</div>
+                    <h3>Scan</h3>
+                    <p>Run a system scan to identify privacy risks and potential data leaks.</p>
+                </div>
+                <div class="doc-card">
+                    <div class="doc-number">03</div>
+                    <h3>Clean</h3>
+                    <p>Select the items you want to remove and initiate secure cleanup.</p>
+                </div>
+                <div class="doc-card">
+                    <div class="doc-number">04</div>
+                    <h3>Protect</h3>
+                    <p>Enable Pro features for comprehensive protection and monitoring.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="nav-logo">
+                        <div class="logo-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2L4 6V12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12V6L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <span>Traceless</span>
+                    </div>
+                    <p>Advanced privacy protection for the modern world.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <a href="#features">Features</a>
+                        <a href="#download">Download</a>
+                        <a href="#docs">Documentation</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Resources</h4>
+                        <a href="https://github.com/Robot0P/TRACELESS" target="_blank">GitHub</a>
+                        <a href="https://github.com/Robot0P/TRACELESS/issues" target="_blank">Issues</a>
+                        <a href="https://github.com/Robot0P/TRACELESS/releases" target="_blank">Releases</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Related</h4>
+                        <a href="https://github.com/Robot0P/traceless-license-generator" target="_blank">License Generator</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Traceless. Open source under MIT License.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-content">
+            <a href="#features" onclick="toggleMobileMenu()">Features</a>
+            <a href="#download" onclick="toggleMobileMenu()">Download</a>
+            <a href="#docs" onclick="toggleMobileMenu()">Documentation</a>
+            <a href="https://github.com/Robot0P/TRACELESS" target="_blank">GitHub</a>
+        </div>
+    </div>
+
+    <script src="assets/js/main.js"></script>
+</body>
+</html>
