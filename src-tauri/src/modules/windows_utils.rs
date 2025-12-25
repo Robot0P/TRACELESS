@@ -933,11 +933,12 @@ pub fn clear_arp_cache() -> Result<(), String> {
     use windows::Win32::Networking::WinSock::AF_UNSPEC;
 
     unsafe {
-        let result = FlushIpNetTable2(AF_UNSPEC);
-        if result == 0 {
+        // FlushIpNetTable2 takes family and interface index (0 = all interfaces)
+        let result = FlushIpNetTable2(AF_UNSPEC, 0);
+        if result.is_ok() {
             Ok(())
         } else {
-            Err(format!("Failed to flush ARP cache: error {}", result))
+            Err("Failed to flush ARP cache".to_string())
         }
     }
 }
