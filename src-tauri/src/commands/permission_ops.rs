@@ -8,6 +8,7 @@ pub static PERMISSION_INITIALIZED: AtomicBool = AtomicBool::new(false);
 
 /// Check if the current operation requires and has admin privileges
 /// Returns Ok(()) if permission is available, Err with error code if not
+/// On Windows, if running without elevation, returns an error prompting user to restart with admin rights
 pub fn require_admin_for_operation(operation: &str) -> Result<(), String> {
     if !permission::requires_elevation(operation) {
         return Ok(());
@@ -19,7 +20,16 @@ pub fn require_admin_for_operation(operation: &str) -> Result<(), String> {
         return Ok(());
     }
 
-    Err(format!("PERMISSION_DENIED:{}:adminRequired", operation))
+    // On Windows, provide a more helpful error message
+    #[cfg(target_os = "windows")]
+    {
+        return Err(format!("PERMISSION_DENIED:{}:请以管理员身份运行此应用程序。右键点击应用图标，选择"以管理员身份运行"。", operation));
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        Err(format!("PERMISSION_DENIED:{}:adminRequired", operation))
+    }
 }
 
 /// Get authorization state file path

@@ -686,7 +686,34 @@ fn get_hibernation_size() -> Option<String> {
     }
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "windows")]
+fn get_hibernation_size() -> Option<String> {
+    // Windows hibernation file is located at C:\hiberfil.sys
+    let system_drive = std::env::var("SYSTEMDRIVE").unwrap_or_else(|_| "C:".to_string());
+    let hiberfil_path = format!("{}\\hiberfil.sys", system_drive);
+
+    if let Ok(metadata) = std::fs::metadata(&hiberfil_path) {
+        let size_bytes = metadata.len();
+        let size_gb = size_bytes as f64 / (1024.0 * 1024.0 * 1024.0);
+        if size_gb >= 1.0 {
+            Some(format!("{:.1} GB", size_gb))
+        } else {
+            let size_mb = size_bytes / 1024 / 1024;
+            Some(format!("{} MB", size_mb))
+        }
+    } else {
+        // Hibernation file doesn't exist or not accessible
+        Some("未启用".to_string())
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn get_hibernation_size() -> Option<String> {
+    // Linux uses swap for hibernation
+    None
+}
+
+#[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
 fn get_hibernation_size() -> Option<String> {
     None
 }
@@ -795,7 +822,7 @@ fn get_windows_memory_info() -> Result<MemoryInfo, String> {
                 swap_total: pagefile_total,
                 app_memory: used_mb,
                 pagefile_size: Some(format!("{} MB", pagefile_total)),
-                hibernation_size: Some("Unknown".to_string()),
+                hibernation_size: get_hibernation_size(),
                 swap_size: None,
             })
         } else {

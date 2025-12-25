@@ -278,6 +278,21 @@ pub fn get_disk_size(drive_letter: &str) -> u64 {
 /// This replaces: ipconfig /all
 #[cfg(target_os = "windows")]
 pub fn get_network_adapters() -> Vec<NetworkAdapterInfo> {
+    use std::panic;
+
+    // Wrap in catch_unwind to prevent crashes
+    let result = panic::catch_unwind(|| {
+        get_network_adapters_inner()
+    });
+
+    match result {
+        Ok(adapters) => adapters,
+        Err(_) => Vec::new(), // Return empty on panic
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn get_network_adapters_inner() -> Vec<NetworkAdapterInfo> {
     use windows::Win32::NetworkManagement::IpHelper::{
         GetAdaptersAddresses, GAA_FLAG_INCLUDE_PREFIX,
         IP_ADAPTER_ADDRESSES_LH,
@@ -431,6 +446,21 @@ pub struct TcpConnectionInfo {
 /// This replaces: netstat -ano
 #[cfg(target_os = "windows")]
 pub fn get_tcp_connections() -> Vec<TcpConnectionInfo> {
+    use std::panic;
+
+    // Wrap in catch_unwind to prevent crashes
+    let result = panic::catch_unwind(|| {
+        get_tcp_connections_inner()
+    });
+
+    match result {
+        Ok(connections) => connections,
+        Err(_) => Vec::new(), // Return empty on panic
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn get_tcp_connections_inner() -> Vec<TcpConnectionInfo> {
     use windows::Win32::NetworkManagement::IpHelper::{
         GetExtendedTcpTable, MIB_TCPTABLE_OWNER_PID, TCP_TABLE_OWNER_PID_ALL,
     };
@@ -533,6 +563,21 @@ pub struct WifiProfileInfo {
 /// This replaces: netsh wlan show profiles
 #[cfg(target_os = "windows")]
 pub fn get_wifi_profiles() -> Vec<WifiProfileInfo> {
+    use std::panic;
+
+    // Wrap in catch_unwind to prevent crashes on systems without WiFi hardware
+    let result = panic::catch_unwind(|| {
+        get_wifi_profiles_inner()
+    });
+
+    match result {
+        Ok(profiles) => profiles,
+        Err(_) => Vec::new(), // Return empty on panic
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn get_wifi_profiles_inner() -> Vec<WifiProfileInfo> {
     use windows::Win32::NetworkManagement::WiFi::{
         WlanOpenHandle, WlanCloseHandle, WlanEnumInterfaces, WlanGetProfileList,
         WlanFreeMemory, WLAN_API_VERSION_2_0, WLAN_INTERFACE_INFO_LIST, WLAN_PROFILE_INFO_LIST,
@@ -565,7 +610,13 @@ pub fn get_wifi_profiles() -> Vec<WifiProfileInfo> {
         }
 
         let interfaces = &*interface_list;
-        for i in 0..interfaces.dwNumberOfItems as usize {
+        let item_count = interfaces.dwNumberOfItems as usize;
+
+        for i in 0..item_count {
+            if i >= 64 {
+                break; // Sanity check
+            }
+
             let interface_guid = &interfaces.InterfaceInfo.get_unchecked(i).InterfaceGuid;
 
             let mut profile_list: *mut WLAN_PROFILE_INFO_LIST = std::ptr::null_mut();
@@ -578,7 +629,13 @@ pub fn get_wifi_profiles() -> Vec<WifiProfileInfo> {
 
             if result == 0 && !profile_list.is_null() {
                 let list = &*profile_list;
-                for j in 0..list.dwNumberOfItems as usize {
+                let profile_count = list.dwNumberOfItems as usize;
+
+                for j in 0..profile_count {
+                    if j >= 256 {
+                        break; // Sanity check
+                    }
+
                     let profile_info = list.ProfileInfo.get_unchecked(j);
                     let name_len = profile_info.strProfileName.iter()
                         .position(|&c| c == 0)

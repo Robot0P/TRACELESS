@@ -1726,7 +1726,30 @@ fn clear_system_logs_with_sudo() -> Result<u32, String> {
 async fn cleanup_item_without_sudo(item_id: &str, path: Option<&str>, home_dir: &str) -> Result<(), String> {
     // 根据 item_id 前缀判断类型并执行清理
     if item_id.starts_with("log_") {
-        // 清理日志（系统路径已在上层用 sudo 处理）
+        // 清理日志
+        #[cfg(target_os = "windows")]
+        {
+            // Windows event logs need to be cleared using wevtutil
+            let log_name = match item_id {
+                "log_application" => Some("Application"),
+                "log_system" => Some("System"),
+                "log_security" => Some("Security"),
+                "log_setup" => Some("Setup"),
+                "log_powershell" => Some("Windows PowerShell"),
+                _ => None,
+            };
+
+            if let Some(name) = log_name {
+                // Use wevtutil to clear Windows event logs
+                let _ = Command::new("wevtutil")
+                    .args(["cl", name])
+                    .hide_window()
+                    .output();
+                return Ok(());
+            }
+        }
+
+        // For non-Windows or non-event-log files
         if let Some(log_path) = path {
             let p = Path::new(log_path);
             if p.exists() {
@@ -1737,14 +1760,22 @@ async fn cleanup_item_without_sudo(item_id: &str, path: Option<&str>, home_dir: 
                             .args(["-c", &format!("rm -rf '{}'/* 2>/dev/null || true", log_path)])
                             .output();
                     }
-                    let _ = clear_directory_contents(p)?;
+                    #[cfg(target_os = "windows")]
+                    {
+                        // On Windows, try to delete directory contents
+                        let _ = clear_directory_contents(p);
+                    }
+                    #[cfg(unix)]
+                    {
+                        let _ = clear_directory_contents(p)?;
+                    }
                 } else {
-                    fs::remove_file(p).map_err(|e| format!("删除日志文件失败: {}", e))?;
+                    let _ = fs::remove_file(p);
                 }
             }
         }
     } else if item_id.starts_with("temp_") {
-        // 清理临时文件（系统路径已在上层用 sudo 处理）
+        // 清理临时文件
         if let Some(temp_path) = path {
             let p = Path::new(temp_path);
             if p.exists() && p.is_dir() {
@@ -1754,7 +1785,17 @@ async fn cleanup_item_without_sudo(item_id: &str, path: Option<&str>, home_dir: 
                         .args(["-c", &format!("rm -rf '{}'/* 2>/dev/null || true", temp_path)])
                         .output();
                 }
-                let _ = clear_directory_contents(p)?;
+                #[cfg(target_os = "windows")]
+                {
+                    // On Windows, use cmd /c rd for better cleanup
+                    let _ = Command::new("cmd")
+                        .args(["/C", "rd", "/s", "/q", temp_path])
+                        .hide_window()
+                        .output();
+                    // Recreate the directory if it was deleted
+                    let _ = fs::create_dir_all(temp_path);
+                }
+                let _ = clear_directory_contents(p);
             }
         }
     } else if item_id.starts_with("browser_") {
