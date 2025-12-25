@@ -134,7 +134,18 @@ pub async fn initialize_permissions() -> Result<String, String> {
             let _ = save_auth_state();
             Ok("OK:adminConfirmed".to_string())
         } else {
-            Err("PERMISSION_DENIED:runAsAdmin".to_string())
+            // Try to restart with elevated privileges
+            match permission::request_elevation() {
+                Ok(_) => {
+                    // If request_elevation succeeds, it will restart the app
+                    // This line should not be reached as the process will exit
+                    Ok("OK:elevationRequested".to_string())
+                }
+                Err(e) => {
+                    // User cancelled or elevation failed
+                    Err(format!("PERMISSION_DENIED:{}", e))
+                }
+            }
         }
     }
 

@@ -65,7 +65,15 @@ const PermissionDialog: React.FC<PermissionDialogProps> = ({ onComplete }) => {
         handleComplete();
       }
     } catch (err) {
-      setError(typeof err === 'string' ? err : (isEnglish ? 'Permission initialization failed' : '权限初始化失败'));
+      const errorStr = typeof err === 'string' ? err : String(err);
+      // Parse error and provide user-friendly message
+      if (errorStr.includes('cancelled') || errorStr.includes('User cancelled')) {
+        setError(isEnglish ? 'Authorization was cancelled. Click to try again.' : '授权已取消。点击重试。');
+      } else if (errorStr.includes('PERMISSION_DENIED')) {
+        setError(isEnglish ? 'Please confirm the UAC prompt to grant administrator privileges.' : '请确认 UAC 提示以授予管理员权限。');
+      } else {
+        setError(isEnglish ? 'Permission initialization failed' : '权限初始化失败');
+      }
     } finally {
       setLoading(false);
     }
