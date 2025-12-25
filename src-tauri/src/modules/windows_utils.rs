@@ -50,7 +50,7 @@ pub fn get_windows_uuid() -> Option<String> {
             hkey,
             PCWSTR::from_raw(value_name.as_ptr()),
             None,
-            Some(&mut data_type.0),
+            Some(&mut data_type),
             Some(buffer.as_mut_ptr() as *mut u8),
             Some(&mut buffer_size),
         );
@@ -137,7 +137,7 @@ unsafe fn read_registry_string(hkey: HKEY, name: &str) -> Option<String> {
         hkey,
         PCWSTR::from_raw(value_name.as_ptr()),
         None,
-        Some(&mut data_type.0),
+        Some(&mut data_type),
         Some(buffer.as_mut_ptr() as *mut u8),
         Some(&mut buffer_size),
     );
@@ -150,20 +150,25 @@ unsafe fn read_registry_string(hkey: HKEY, name: &str) -> Option<String> {
     Some(String::from_utf16_lossy(&buffer[..len]))
 }
 
-/// Flush DNS cache using Windows API
+/// Flush DNS cache using command line (DnsFlushResolverCache is not in windows crate)
 /// This replaces: ipconfig /flushdns
 #[cfg(target_os = "windows")]
 pub fn flush_dns_cache() -> Result<(), String> {
-    use windows::Win32::NetworkManagement::IpHelper::DnsFlushResolverCache;
+    use crate::modules::command_utils::CommandExt;
+    use std::process::Command;
 
-    unsafe {
-        // DnsFlushResolverCache returns BOOL
-        let result = DnsFlushResolverCache();
-        if result.as_bool() {
-            Ok(())
-        } else {
-            Err("Failed to flush DNS cache".to_string())
-        }
+    // DnsFlushResolverCache is an undocumented API not available in windows crate
+    // Use ipconfig /flushdns with hidden window as fallback
+    let output = Command::new("ipconfig")
+        .arg("/flushdns")
+        .hide_window()
+        .output()
+        .map_err(|e| format!("Failed to execute ipconfig: {}", e))?;
+
+    if output.status.success() {
+        Ok(())
+    } else {
+        Err("Failed to flush DNS cache".to_string())
     }
 }
 
@@ -359,12 +364,12 @@ pub fn get_arp_cache_count() -> u32 {
         let mut table = std::ptr::null_mut();
         let result = GetIpNetTable2(AF_UNSPEC, &mut table);
 
-        if result != 0 || table.is_null() {
+        if result.is_err() || table.is_null() {
             return 0;
         }
 
         let count = (*table).NumEntries;
-        FreeMibTable(table as *const _);
+        let _ = FreeMibTable(table as *const _);
         count
     }
 }
@@ -390,12 +395,12 @@ pub fn get_route_count() -> u32 {
         let mut table = std::ptr::null_mut();
         let result = GetIpForwardTable2(AF_UNSPEC, &mut table);
 
-        if result != 0 || table.is_null() {
+        if result.is_err() || table.is_null() {
             return 0;
         }
 
         let count = (*table).NumEntries;
-        FreeMibTable(table as *const _);
+        let _ = FreeMibTable(table as *const _);
         count
     }
 }
@@ -530,13 +535,14 @@ pub struct WifiProfileInfo {
 pub fn get_wifi_profiles() -> Vec<WifiProfileInfo> {
     use windows::Win32::NetworkManagement::WiFi::{
         WlanOpenHandle, WlanCloseHandle, WlanEnumInterfaces, WlanGetProfileList,
-        WlanFreeMemory, WLAN_API_VERSION_2_0,
+        WlanFreeMemory, WLAN_API_VERSION_2_0, WLAN_INTERFACE_INFO_LIST, WLAN_PROFILE_INFO_LIST,
     };
+    use windows::Win32::Foundation::HANDLE;
 
     let mut profiles = Vec::new();
 
     unsafe {
-        let mut client_handle = std::ptr::null_mut();
+        let mut client_handle: HANDLE = HANDLE::default();
         let mut negotiated_version: u32 = 0;
 
         let result = WlanOpenHandle(
@@ -546,23 +552,23 @@ pub fn get_wifi_profiles() -> Vec<WifiProfileInfo> {
             &mut client_handle,
         );
 
-        if result != 0 || client_handle.is_null() {
+        if result != 0 || client_handle.is_invalid() {
             return profiles;
         }
 
-        let mut interface_list = std::ptr::null_mut();
+        let mut interface_list: *mut WLAN_INTERFACE_INFO_LIST = std::ptr::null_mut();
         let result = WlanEnumInterfaces(client_handle, None, &mut interface_list);
 
         if result != 0 || interface_list.is_null() {
-            WlanCloseHandle(client_handle, None);
+            let _ = WlanCloseHandle(client_handle, None);
             return profiles;
         }
 
         let interfaces = &*interface_list;
         for i in 0..interfaces.dwNumberOfItems as usize {
-            let interface_guid = &interfaces.InterfaceInfo[i].InterfaceGuid;
+            let interface_guid = &interfaces.InterfaceInfo.get_unchecked(i).InterfaceGuid;
 
-            let mut profile_list = std::ptr::null_mut();
+            let mut profile_list: *mut WLAN_PROFILE_INFO_LIST = std::ptr::null_mut();
             let result = WlanGetProfileList(
                 client_handle,
                 interface_guid,
@@ -573,7 +579,7 @@ pub fn get_wifi_profiles() -> Vec<WifiProfileInfo> {
             if result == 0 && !profile_list.is_null() {
                 let list = &*profile_list;
                 for j in 0..list.dwNumberOfItems as usize {
-                    let profile_info = &list.ProfileInfo[j];
+                    let profile_info = list.ProfileInfo.get_unchecked(j);
                     let name_len = profile_info.strProfileName.iter()
                         .position(|&c| c == 0)
                         .unwrap_or(profile_info.strProfileName.len());
@@ -589,7 +595,7 @@ pub fn get_wifi_profiles() -> Vec<WifiProfileInfo> {
         }
 
         WlanFreeMemory(interface_list as *const _);
-        WlanCloseHandle(client_handle, None);
+        let _ = WlanCloseHandle(client_handle, None);
     }
 
     profiles
@@ -601,13 +607,14 @@ pub fn get_wifi_profiles() -> Vec<WifiProfileInfo> {
 pub fn delete_wifi_profile(ssid: &str) -> Result<(), String> {
     use windows::Win32::NetworkManagement::WiFi::{
         WlanOpenHandle, WlanCloseHandle, WlanEnumInterfaces, WlanDeleteProfile,
-        WlanFreeMemory, WLAN_API_VERSION_2_0,
+        WlanFreeMemory, WLAN_API_VERSION_2_0, WLAN_INTERFACE_INFO_LIST,
     };
+    use windows::Win32::Foundation::HANDLE;
     use std::ffi::OsStr;
     use std::os::windows::ffi::OsStrExt;
 
     unsafe {
-        let mut client_handle = std::ptr::null_mut();
+        let mut client_handle: HANDLE = HANDLE::default();
         let mut negotiated_version: u32 = 0;
 
         let result = WlanOpenHandle(
@@ -617,15 +624,15 @@ pub fn delete_wifi_profile(ssid: &str) -> Result<(), String> {
             &mut client_handle,
         );
 
-        if result != 0 || client_handle.is_null() {
+        if result != 0 || client_handle.is_invalid() {
             return Err("Failed to open WLAN handle".to_string());
         }
 
-        let mut interface_list = std::ptr::null_mut();
+        let mut interface_list: *mut WLAN_INTERFACE_INFO_LIST = std::ptr::null_mut();
         let result = WlanEnumInterfaces(client_handle, None, &mut interface_list);
 
         if result != 0 || interface_list.is_null() {
-            WlanCloseHandle(client_handle, None);
+            let _ = WlanCloseHandle(client_handle, None);
             return Err("Failed to enumerate WLAN interfaces".to_string());
         }
 
@@ -638,7 +645,7 @@ pub fn delete_wifi_profile(ssid: &str) -> Result<(), String> {
         let mut deleted = false;
 
         for i in 0..interfaces.dwNumberOfItems as usize {
-            let interface_guid = &interfaces.InterfaceInfo[i].InterfaceGuid;
+            let interface_guid = &interfaces.InterfaceInfo.get_unchecked(i).InterfaceGuid;
 
             let result = WlanDeleteProfile(
                 client_handle,
@@ -653,7 +660,7 @@ pub fn delete_wifi_profile(ssid: &str) -> Result<(), String> {
         }
 
         WlanFreeMemory(interface_list as *const _);
-        WlanCloseHandle(client_handle, None);
+        let _ = WlanCloseHandle(client_handle, None);
 
         if deleted {
             Ok(())
