@@ -636,10 +636,8 @@ pub fn open_full_disk_access_settings() -> Result<(), String> {
 
     #[cfg(target_os = "windows")]
     {
-        // Open Windows Security settings
-        Command::new("cmd")
-            .args(["/C", "start", "windowsdefender://threatsettings"])
-            .spawn()
+        // Use Windows API instead of cmd command
+        crate::modules::windows_utils::shell_open("windowsdefender://threatsettings")
             .map_err(|e| format!("Failed to open security settings: {}", e))?;
         Ok(())
     }
@@ -677,9 +675,8 @@ pub fn open_accessibility_settings() -> Result<(), String> {
 
     #[cfg(target_os = "windows")]
     {
-        Command::new("cmd")
-            .args(["/C", "start", "ms-settings:easeofaccess"])
-            .spawn()
+        // Use Windows API instead of cmd command
+        crate::modules::windows_utils::shell_open("ms-settings:easeofaccess")
             .map_err(|e| format!("Failed to open accessibility settings: {}", e))?;
         Ok(())
     }
@@ -717,9 +714,8 @@ pub fn open_privacy_settings() -> Result<(), String> {
 
     #[cfg(target_os = "windows")]
     {
-        Command::new("cmd")
-            .args(["/C", "start", "ms-settings:privacy"])
-            .spawn()
+        // Use Windows API instead of cmd command
+        crate::modules::windows_utils::shell_open("ms-settings:privacy")
             .map_err(|e| format!("Failed to open system settings: {}", e))?;
         Ok(())
     }

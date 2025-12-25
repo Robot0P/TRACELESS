@@ -1,3 +1,4 @@
+use crate::modules::command_utils::CommandExt;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
@@ -588,24 +589,40 @@ async fn scan_network_cache() -> Result<Vec<ScanResult>, String> {
 
     #[cfg(target_os = "windows")]
     {
-        // Windows 使用 ipconfig /displaydns 检查 DNS 缓存
-        if let Ok(output) = Command::new("ipconfig")
-            .arg("/displaydns")
-            .output()
-        {
-            let output_str = String::from_utf8_lossy(&output.stdout);
-            let entry_count = output_str.matches("Record Name").count();
-            if entry_count > 0 {
-                results.push(ScanResult {
-                    id: "network_dns".to_string(),
-                    category: "网络缓存".to_string(),
-                    item_type: "DNS 缓存".to_string(),
-                    description: format!("发现 {} 条 DNS 缓存记录", entry_count),
-                    severity: ScanSeverity::Medium,
-                    path: Some("DNS Resolver Cache".to_string()),
-                    size: None,
-                    count: Some(entry_count as u32),
-                });
+        // Windows DNS 缓存检查 - 使用 Windows API (返回 0 表示需要回退到命令)
+        let dns_count = crate::modules::windows_utils::get_dns_cache_entries_count();
+        if dns_count > 0 {
+            results.push(ScanResult {
+                id: "network_dns".to_string(),
+                category: "网络缓存".to_string(),
+                item_type: "DNS 缓存".to_string(),
+                description: format!("发现 {} 条 DNS 缓存记录", dns_count),
+                severity: ScanSeverity::Medium,
+                path: Some("DNS Resolver Cache".to_string()),
+                size: None,
+                count: Some(dns_count),
+            });
+        } else {
+            // 回退到 ipconfig /displaydns 并隐藏窗口
+            if let Ok(output) = Command::new("ipconfig")
+                .arg("/displaydns")
+                .hide_window()
+                .output()
+            {
+                let output_str = String::from_utf8_lossy(&output.stdout);
+                let entry_count = output_str.matches("Record Name").count();
+                if entry_count > 0 {
+                    results.push(ScanResult {
+                        id: "network_dns".to_string(),
+                        category: "网络缓存".to_string(),
+                        item_type: "DNS 缓存".to_string(),
+                        description: format!("发现 {} 条 DNS 缓存记录", entry_count),
+                        severity: ScanSeverity::Medium,
+                        path: Some("DNS Resolver Cache".to_string()),
+                        size: None,
+                        count: Some(entry_count as u32),
+                    });
+                }
             }
         }
     }
@@ -940,13 +957,10 @@ fn detect_virtual_machine() -> bool {
 
     #[cfg(target_os = "windows")]
     {
-        // 检查 WMI 获取系统信息
-        if let Ok(output) = Command::new("wmic")
-            .args(["computersystem", "get", "model"])
-            .output()
-        {
-            let model = String::from_utf8_lossy(&output.stdout).to_lowercase();
-            if model.contains("virtual") || model.contains("vmware") || model.contains("virtualbox") {
+        // 使用 Windows API 获取计算机型号
+        if let Some(model) = crate::modules::windows_utils::get_computer_model() {
+            let model_lower = model.to_lowercase();
+            if model_lower.contains("virtual") || model_lower.contains("vmware") || model_lower.contains("virtualbox") {
                 return true;
             }
         }
@@ -1836,7 +1850,8 @@ async fn cleanup_item_without_sudo(item_id: &str, path: Option<&str>, home_dir: 
         }
         #[cfg(target_os = "windows")]
         {
-            let _ = Command::new("ipconfig").arg("/flushdns").output();
+            // 使用 Windows API 刷新 DNS 缓存
+            let _ = crate::modules::windows_utils::flush_dns_cache();
         }
         #[cfg(target_os = "linux")]
         {
@@ -1908,8 +1923,10 @@ async fn cleanup_item_without_sudo(item_id: &str, path: Option<&str>, home_dir: 
         }
         #[cfg(target_os = "windows")]
         {
+            // 使用 hide_window() 隐藏 CMD 窗口
             let _ = Command::new("cmd")
                 .args(["/C", "rd", "/s", "/q", "C:\\$Recycle.Bin"])
+                .hide_window()
                 .output();
         }
         #[cfg(target_os = "linux")]
@@ -2021,8 +2038,8 @@ async fn cleanup_item_without_sudo(item_id: &str, path: Option<&str>, home_dir: 
         #[cfg(target_os = "windows")]
         {
             if item_id == "hibernation_hiberfil" {
-                // 禁用 Windows 休眠
-                let _ = Command::new("powercfg").args(["/hibernate", "off"]).output();
+                // 禁用 Windows 休眠 - 使用 Windows API
+                let _ = crate::modules::windows_utils::disable_hibernation();
             }
         }
     } else if item_id == "downloads_large" {

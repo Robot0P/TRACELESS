@@ -1001,10 +1001,17 @@ pub fn clear_windows_log(log_type: &str) -> Result<(), String> {
 
         // ========== 文件类别 ==========
         "trash" => {
-            // Windows 回收站需要使用特殊命令
-            let _ = Command::new("cmd")
-                .args(&["/C", "rd", "/s", "/q", "C:\\$Recycle.Bin"])
-                .output();
+            // Use Rust std to clear recycle bin contents
+            // Note: Full recycle bin clearing requires Shell API or admin rights
+            // This clears accessible parts
+            let recycle_path = std::path::Path::new("C:\\$Recycle.Bin");
+            if recycle_path.exists() {
+                if let Ok(entries) = std::fs::read_dir(recycle_path) {
+                    for entry in entries.flatten() {
+                        let _ = std::fs::remove_dir_all(entry.path());
+                    }
+                }
+            }
             return Ok(());
         },
 

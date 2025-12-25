@@ -1,3 +1,4 @@
+use crate::modules::command_utils::CommandExt;
 use std::process::Command;
 
 /// 磁盘加密状态
@@ -23,6 +24,7 @@ pub fn check_bitlocker_status() -> Result<DiskEncryptionStatus, String> {
     // 使用 manage-bde 命令检查 BitLocker 状态
     let output = Command::new("manage-bde")
         .arg("-status")
+        .hide_window()
         .output()
         .map_err(|e| format!("无法执行 manage-bde: {}", e))?;
 
@@ -139,22 +141,8 @@ pub fn check_bitlocker_status() -> Result<DiskEncryptionStatus, String> {
 /// 获取 Windows 磁盘大小
 #[cfg(target_os = "windows")]
 fn get_windows_disk_size(drive: &str) -> u64 {
-    // 使用 wmic 获取磁盘大小
-    let drive_letter = drive.trim_end_matches(':').trim_end_matches('\\');
-    if let Ok(output) = Command::new("wmic")
-        .args(&["logicaldisk", "where", &format!("DeviceID='{}':", drive_letter), "get", "Size", "/value"])
-        .output()
-    {
-        let output_str = String::from_utf8_lossy(&output.stdout);
-        for line in output_str.lines() {
-            if line.starts_with("Size=") {
-                if let Ok(size) = line[5..].trim().parse::<u64>() {
-                    return size;
-                }
-            }
-        }
-    }
-    0
+    // Use Windows API instead of wmic command
+    crate::modules::windows_utils::get_disk_size(drive)
 }
 
 /// 检查 FileVault 状态 (macOS)
@@ -238,6 +226,7 @@ pub fn enable_bitlocker(drive: &str) -> Result<String, String> {
         .arg("-on")
         .arg(drive)
         .arg("-RecoveryPassword")
+        .hide_window()
         .output()
         .map_err(|e| format!("无法启用 BitLocker: {}", e))?;
 
@@ -276,6 +265,7 @@ pub fn disable_bitlocker(drive: &str) -> Result<String, String> {
     let output = Command::new("manage-bde")
         .arg("-off")
         .arg(drive)
+        .hide_window()
         .output()
         .map_err(|e| format!("无法禁用 BitLocker: {}", e))?;
 

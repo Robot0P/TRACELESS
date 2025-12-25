@@ -1,3 +1,5 @@
+pub mod command_utils;
+pub mod windows_utils;
 pub mod secure_delete;
 pub mod log_cleaner;
 pub mod memory_cleaner;
@@ -42,3 +44,4 @@ pub use dry_run::{DryRunOperation, PreviewItem, RiskLevel, PreviewResult, previe
 pub use license::{LicenseTier, LicenseStatus, LicenseValidationResult, ActivatedLicense, FeatureAccess};
 pub use license_validator::{get_machine_id, get_short_machine_id, validate_license_key, generate_license_key};
 pub use license_storage::{get_license_status, activate_license, deactivate_license, get_feature_access, can_access_feature};
+pub use command_utils::{command, execute, execute_string, CommandExt};

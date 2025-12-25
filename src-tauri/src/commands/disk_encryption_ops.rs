@@ -1,4 +1,5 @@
 use crate::commands::permission_ops::require_admin_for_operation;
+use crate::modules::command_utils::CommandExt;
 use serde::{Deserialize, Serialize};
 use std::process::Command;
 
@@ -50,6 +51,66 @@ fn format_size(bytes: u64) -> String {
     } else {
         format!("{} B", bytes)
     }
+}
+
+/// 获取磁盘详细信息 (Windows) - 使用 Windows API
+#[cfg(target_os = "windows")]
+fn get_disk_details(drive: &str) -> (u64, String, String) {
+    use std::ffi::OsStr;
+    use std::os::windows::ffi::OsStrExt;
+    use windows::core::PCWSTR;
+    use windows::Win32::Storage::FileSystem::{
+        GetDiskFreeSpaceExW, GetVolumeInformationW,
+    };
+
+    let drive_path = format!("{}\\", drive.trim_end_matches('\\'));
+    let drive_wide: Vec<u16> = OsStr::new(&drive_path)
+        .encode_wide()
+        .chain(std::iter::once(0))
+        .collect();
+
+    let mut free_bytes: u64 = 0;
+    let mut file_system = "NTFS".to_string();
+    let mut volume_name = format!("本地磁盘 ({})", drive);
+
+    unsafe {
+        // 获取可用空间
+        let _ = GetDiskFreeSpaceExW(
+            PCWSTR::from_raw(drive_wide.as_ptr()),
+            None,
+            None,
+            Some(&mut free_bytes),
+        );
+
+        // 获取卷信息
+        let mut vol_name_buf: [u16; 256] = [0; 256];
+        let mut fs_name_buf: [u16; 256] = [0; 256];
+
+        let result = GetVolumeInformationW(
+            PCWSTR::from_raw(drive_wide.as_ptr()),
+            Some(&mut vol_name_buf),
+            None,
+            None,
+            None,
+            Some(&mut fs_name_buf),
+        );
+
+        if result.is_ok() {
+            let vol_len = vol_name_buf.iter().position(|&c| c == 0).unwrap_or(vol_name_buf.len());
+            let vol_str = String::from_utf16_lossy(&vol_name_buf[..vol_len]);
+            if !vol_str.is_empty() {
+                volume_name = vol_str;
+            }
+
+            let fs_len = fs_name_buf.iter().position(|&c| c == 0).unwrap_or(fs_name_buf.len());
+            let fs_str = String::from_utf16_lossy(&fs_name_buf[..fs_len]);
+            if !fs_str.is_empty() {
+                file_system = fs_str;
+            }
+        }
+    }
+
+    (free_bytes, file_system, volume_name)
 }
 
 /// 检查磁盘加密状态
@@ -258,20 +319,16 @@ async fn check_windows_encryption() -> Result<EncryptionStatus, String> {
     let drives = vec!["C:", "D:", "E:", "F:"];
 
     for drive in drives {
-        // 检查驱动器是否存在
-        let exists = Command::new("cmd")
-            .args(["/C", &format!("if exist {}\\nul echo exists", drive)])
-            .output()
-            .map(|o| String::from_utf8_lossy(&o.stdout).contains("exists"))
-            .unwrap_or(false);
-
-        if !exists {
+        // 检查驱动器是否存在 - 使用 Rust 标准库而非 cmd
+        let drive_path = format!("{}\\", drive);
+        if !std::path::Path::new(&drive_path).exists() {
             continue;
         }
 
         // 检查 BitLocker 状态
         let bitlocker_output = Command::new("manage-bde")
             .args(["-status", drive])
+            .hide_window()
             .output();
 
         let mut is_encrypted = false;
@@ -300,35 +357,15 @@ async fn check_windows_encryption() -> Result<EncryptionStatus, String> {
             }
         }
 
-        // 获取磁盘信息
-        let wmic_output = Command::new("wmic")
-            .args(["logicaldisk", "where", &format!("DeviceID='{}'", drive), "get", "Size,FreeSpace,FileSystem,VolumeName", "/format:list"])
-            .output();
+        // 获取磁盘信息 - 使用 Windows API 而非 wmic
+        let size_bytes = crate::modules::windows_utils::get_disk_size(drive);
 
-        let mut size_bytes: u64 = 0;
-        let mut free_bytes: u64 = 0;
-        let mut file_system = "NTFS".to_string();
-        let mut volume_name = format!("本地磁盘 ({})", drive);
+        // 获取可用空间使用 GetDiskFreeSpaceExW
+        let (free_bytes, file_system, volume_name) = get_disk_details(drive);
 
-        if let Ok(output) = wmic_output {
-            let output_str = String::from_utf8_lossy(&output.stdout);
-            for line in output_str.lines() {
-                if line.starts_with("Size=") {
-                    size_bytes = line.replace("Size=", "").trim().parse().unwrap_or(0);
-                } else if line.starts_with("FreeSpace=") {
-                    free_bytes = line.replace("FreeSpace=", "").trim().parse().unwrap_or(0);
-                } else if line.starts_with("FileSystem=") {
-                    let fs = line.replace("FileSystem=", "").trim().to_string();
-                    if !fs.is_empty() {
-                        file_system = fs;
-                    }
-                } else if line.starts_with("VolumeName=") {
-                    let name = line.replace("VolumeName=", "").trim().to_string();
-                    if !name.is_empty() {
-                        volume_name = name;
-                    }
-                }
-            }
+        // 如果 size_bytes 为 0，跳过此驱动器（可能是空驱动器）
+        if size_bytes == 0 {
+            continue;
         }
 
         let used_bytes = size_bytes.saturating_sub(free_bytes);
@@ -541,6 +578,7 @@ pub async fn enable_disk_encryption(disk_path: String) -> Result<String, String>
 async fn enable_bitlocker(drive: String) -> Result<String, String> {
     let output = Command::new("manage-bde")
         .args(["-on", &drive, "-RecoveryPassword"])
+        .hide_window()
         .output()
         .map_err(|e| format!("IO_ERROR:{}", e))?;
 
@@ -587,6 +625,7 @@ pub async fn disable_disk_encryption(disk_path: String) -> Result<String, String
 async fn disable_bitlocker(drive: String) -> Result<String, String> {
     let output = Command::new("manage-bde")
         .args(["-off", &drive])
+        .hide_window()
         .output()
         .map_err(|e| format!("IO_ERROR:{}", e))?;
 

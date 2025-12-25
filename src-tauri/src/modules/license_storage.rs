@@ -16,22 +16,9 @@ use once_cell::sync::Lazy;
 fn generate_encryption_key() -> String {
     let mut hasher = Sha256::new();
 
-    // Use machine-specific features
+    // Use machine-specific features - environment variables (no CMD needed)
     if let Ok(hostname) = std::env::var("HOSTNAME")
         .or_else(|_| std::env::var("COMPUTERNAME"))
-        .or_else(|_| {
-            #[cfg(unix)]
-            {
-                std::process::Command::new("hostname")
-                    .output()
-                    .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
-                    .map_err(|_| std::env::VarError::NotPresent)
-            }
-            #[cfg(not(unix))]
-            {
-                Err(std::env::VarError::NotPresent)
-            }
-        })
     {
         hasher.update(hostname.as_bytes());
     }
@@ -68,11 +55,9 @@ fn generate_encryption_key() -> String {
 
     #[cfg(target_os = "windows")]
     {
-        if let Ok(output) = std::process::Command::new("wmic")
-            .args(["csproduct", "get", "UUID"])
-            .output()
-        {
-            hasher.update(&output.stdout);
+        // Use Windows API instead of wmic command
+        if let Some(uuid) = crate::modules::windows_utils::get_windows_uuid() {
+            hasher.update(uuid.as_bytes());
         }
     }
 

@@ -584,12 +584,8 @@ fn get_platform_info() -> (String, String) {
 
     #[cfg(target_os = "windows")]
     {
-        use std::process::Command;
-        let version = Command::new("cmd")
-            .args(["/C", "ver"])
-            .output()
-            .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
-            .unwrap_or_else(|_| "Unknown".to_string());
+        // Use Windows API instead of cmd /C ver
+        let version = crate::modules::windows_utils::get_windows_version();
         ("Windows".to_string(), version)
     }
 

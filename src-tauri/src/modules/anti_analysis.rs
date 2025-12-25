@@ -1,3 +1,4 @@
+use crate::modules::command_utils::CommandExt;
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::process::Command;
@@ -850,11 +851,12 @@ fn check_forensic_tools_linux() -> (bool, Option<String>) {
 
 #[cfg(target_os = "windows")]
 fn check_windows_wmi() -> (bool, Option<String>) {
-    if let Ok(output) = Command::new("wmic").args(["computersystem", "get", "model"]).output() {
-        let model = String::from_utf8_lossy(&output.stdout).to_lowercase();
+    // Use Windows API instead of wmic command
+    if let Some(model) = crate::modules::windows_utils::get_computer_model() {
+        let model_lower = model.to_lowercase();
         let vm_models = ["vmware", "virtual", "qemu", "xen"];
         for vm in vm_models {
-            if model.contains(vm) {
+            if model_lower.contains(vm) {
                 return (true, Some(format!("WMI 检测到虚拟机: {}", vm)));
             }
         }
@@ -865,17 +867,15 @@ fn check_windows_wmi() -> (bool, Option<String>) {
 
 #[cfg(target_os = "windows")]
 fn check_windows_registry_vm() -> (bool, Option<String>) {
-    // 使用 reg query 检查虚拟机注册表项
+    // Use Windows API instead of reg command
     let registry_paths = [
         r"HKLM\SOFTWARE\VMware, Inc.\VMware Tools",
         r"HKLM\SOFTWARE\Oracle\VirtualBox Guest Additions",
     ];
 
     for path in registry_paths {
-        if let Ok(output) = Command::new("reg").args(["query", path]).output() {
-            if output.status.success() {
-                return (true, Some(format!("检测到虚拟机注册表: {}", path)));
-            }
+        if crate::modules::windows_utils::registry_key_exists(path) {
+            return (true, Some(format!("检测到虚拟机注册表: {}", path)));
         }
     }
 

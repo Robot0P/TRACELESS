@@ -1,3 +1,4 @@
+use crate::modules::command_utils::CommandExt;
 use serde::{Deserialize, Serialize};
 use std::process::Command;
 
@@ -779,9 +780,12 @@ pub fn clear_recentdocs() -> Result<(), String> {
         .ok();
 
     if let Some(folder) = recent_folder {
-        let _ = Command::new("cmd")
-            .args(["/C", "del", "/F", "/Q", &format!("{}\\*", folder)])
-            .output();
+        // Use Rust std instead of cmd command
+        if let Ok(entries) = std::fs::read_dir(&folder) {
+            for entry in entries.flatten() {
+                let _ = std::fs::remove_file(entry.path());
+            }
+        }
     }
 
     Ok(())

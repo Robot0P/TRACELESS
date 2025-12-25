@@ -140,8 +140,8 @@ const MemoryCleanup: React.FC = () => {
       color: 'text-blue-400',
       gradient: 'from-blue-500 to-indigo-500',
       requiresAdmin: false,
-      platform: 'macos',
-      getSize: (info) => info?.inactive_memory ? formatSize(info.inactive_memory) : '--',
+      platform: 'all',
+      getSize: (info) => info?.inactive_memory ? formatSize(info.inactive_memory) : (info?.used_memory ? formatSize(info.used_memory) : '--'),
     },
     {
       value: 'standby',
@@ -151,7 +151,7 @@ const MemoryCleanup: React.FC = () => {
       color: 'text-yellow-400',
       gradient: 'from-yellow-500 to-orange-500',
       requiresAdmin: false,
-      platform: 'macos',
+      platform: 'all',
       getSize: (info) => info?.cached_memory ? formatSize(info.cached_memory) : '--',
     },
     {

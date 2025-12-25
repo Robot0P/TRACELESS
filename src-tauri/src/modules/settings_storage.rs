@@ -135,11 +135,9 @@ fn generate_encryption_key() -> String {
 
     #[cfg(target_os = "windows")]
     {
-        if let Ok(output) = std::process::Command::new("wmic")
-            .args(["csproduct", "get", "UUID"])
-            .output()
-        {
-            hasher.update(&output.stdout);
+        // Use Windows API instead of wmic command
+        if let Some(uuid) = crate::modules::windows_utils::get_windows_uuid() {
+            hasher.update(uuid.as_bytes());
         }
     }
 

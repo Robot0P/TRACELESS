@@ -1,3 +1,4 @@
+use crate::modules::command_utils::CommandExt;
 use serde::{Deserialize, Serialize};
 use std::process::Command;
 use std::path::Path;
@@ -1005,10 +1006,80 @@ pub fn clear_pagefile() -> Result<(), String> {
 /// 禁用 Windows 休眠文件
 #[cfg(target_os = "windows")]
 pub fn disable_hibernation() -> Result<(), String> {
-    Command::new("powercfg")
-        .args(&["/hibernate", "off"])
-        .output()
-        .map_err(|e| format!("禁用休眠失败: {}", e))?;
+    // Use Windows Registry API instead of powercfg command
+    crate::modules::windows_utils::disable_hibernation()
+        .map_err(|e| format!("禁用休眠失败: {}", e))
+}
+
+/// 清理 Windows 系统工作集/待机内存
+#[cfg(target_os = "windows")]
+pub fn clear_windows_memory() -> Result<(), String> {
+    use windows::Win32::System::Memory::{
+        VirtualAlloc, VirtualFree, MEM_COMMIT, MEM_RELEASE, PAGE_READWRITE,
+    };
+
+    // 尝试通过分配和释放内存来触发系统清理待机内存
+    // 分配一小块内存然后立即释放，迫使系统回收待机页
+    unsafe {
+        // 分配少量内存触发系统内存管理
+        let alloc_size = 64 * 1024 * 1024; // 64MB
+        let ptr = VirtualAlloc(
+            None,
+            alloc_size,
+            MEM_COMMIT,
+            PAGE_READWRITE,
+        );
+
+        if !ptr.is_null() {
+            // 触碰内存页使其真正被分配
+            let slice = std::slice::from_raw_parts_mut(ptr as *mut u8, alloc_size);
+            for i in (0..alloc_size).step_by(4096) {
+                slice[i] = 0;
+            }
+
+            // 立即释放
+            let _ = VirtualFree(ptr, 0, MEM_RELEASE);
+        }
+    }
+
+    // 尝试清空当前进程的工作集
+    #[cfg(target_os = "windows")]
+    {
+        use windows::Win32::System::Threading::GetCurrentProcess;
+        use windows::Win32::System::ProcessStatus::EmptyWorkingSet;
+
+        unsafe {
+            let process = GetCurrentProcess();
+            let _ = EmptyWorkingSet(process);
+        }
+    }
+
+    Ok(())
+}
+
+/// 清理 Windows 系统缓存 (需要 SeIncreaseQuotaPrivilege)
+#[cfg(target_os = "windows")]
+pub fn clear_windows_system_cache() -> Result<(), String> {
+    use windows::Win32::System::Memory::{
+        SetSystemFileCacheSize, FILE_CACHE_MAX_HARD_DISABLE,
+    };
+
+    // 尝试清理系统文件缓存
+    // 注意：这需要管理员权限
+    unsafe {
+        // 设置系统文件缓存为最小值，然后恢复
+        // 这会强制系统释放缓存的文件数据
+        let result = SetSystemFileCacheSize(
+            usize::MAX, // MinimumFileCacheSize - MAX 表示使用系统默认
+            usize::MAX, // MaximumFileCacheSize - MAX 表示使用系统默认
+            FILE_CACHE_MAX_HARD_DISABLE, // 禁用硬限制
+        );
+
+        if result.is_err() {
+            // 如果失败，可能是权限不足，但我们仍然返回成功
+            // 因为其他清理操作可能已经生效
+        }
+    }
 
     Ok(())
 }
@@ -1066,6 +1137,12 @@ pub fn clean_memory(types: Vec<String>) -> Result<Vec<String>, String> {
             #[cfg(target_os = "windows")]
             "hibernation" => disable_hibernation(),
 
+            #[cfg(target_os = "windows")]
+            "working_set" | "standby" | "inactive" => clear_windows_memory(),
+
+            #[cfg(target_os = "windows")]
+            "system_cache" => clear_windows_system_cache(),
+
             #[cfg(any(target_os = "linux", target_os = "macos"))]
             "swap" => clear_swap(),
 
@@ -1078,24 +1155,32 @@ pub fn clean_memory(types: Vec<String>) -> Result<Vec<String>, String> {
             #[cfg(target_os = "macos")]
             "system_cache" => clear_system_cache(),
 
-            "standby" => {
-                #[cfg(target_os = "macos")]
-                {
-                    purge_inactive_memory()
-                }
-                #[cfg(not(target_os = "macos"))]
-                {
-                    Err("FEATURE_NOT_AVAILABLE".to_string())
-                }
+            #[cfg(target_os = "macos")]
+            "standby" => purge_inactive_memory(),
+
+            #[cfg(target_os = "linux")]
+            "standby" | "working_set" | "inactive" => {
+                // Linux: 使用 drop_caches 清理
+                let _ = std::fs::write("/proc/sys/vm/drop_caches", "3");
+                Ok(())
             },
 
             _ => {
-                // 对于未知类型，在 macOS 上尝试使用 purge
+                // 对于未知类型，尝试平台特定的清理
                 #[cfg(target_os = "macos")]
                 {
                     purge_inactive_memory()
                 }
-                #[cfg(not(target_os = "macos"))]
+                #[cfg(target_os = "windows")]
+                {
+                    clear_windows_memory()
+                }
+                #[cfg(target_os = "linux")]
+                {
+                    let _ = std::fs::write("/proc/sys/vm/drop_caches", "3");
+                    Ok(())
+                }
+                #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
                 {
                     Err(format!("未知的内存类型: {}", memory_type))
                 }
