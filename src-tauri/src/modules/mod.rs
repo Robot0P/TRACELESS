@@ -1,5 +1,4 @@
 pub mod command_utils;
-pub mod windows_utils;
 pub mod secure_delete;
 pub mod log_cleaner;
 pub mod memory_cleaner;

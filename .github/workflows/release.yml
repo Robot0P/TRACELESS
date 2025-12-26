@@ -30,22 +30,6 @@ jobs:
             args: '--target x86_64-apple-darwin'
             target: x86_64-apple-darwin
             name: macos-x64
-          # Windows x64 (64-bit)
-          - platform: windows-latest
-            args: ''
-            target: x86_64-pc-windows-msvc
-            name: windows-x64
-          # Windows x86 (32-bit)
-          - platform: windows-latest
-            args: '--target i686-pc-windows-msvc'
-            target: i686-pc-windows-msvc
-            name: windows-x86
-          # Linux x64 (64-bit)
-          # Note: Linux x86 (32-bit) is not supported by Tauri due to webkit2gtk-4.1 unavailability
-          - platform: ubuntu-22.04
-            args: ''
-            target: x86_64-unknown-linux-gnu
-            name: linux-x64
 
     runs-on: ${{ matrix.platform }}
 
@@ -63,18 +47,12 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || matrix.target }}
+          targets: 'aarch64-apple-darwin,x86_64-apple-darwin'
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
-
-      - name: Install dependencies (Ubuntu)
-        if: matrix.platform == 'ubuntu-22.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: Install npm dependencies
         run: npm ci --legacy-peer-deps
@@ -95,20 +73,10 @@ jobs:
             |---------------|-----------|-----------|------------------|
             | macOS | ARM64 | `Traceless_*_aarch64.dmg` | M1/M2/M3/M4 芯片 |
             | macOS | x64 | `Traceless_*_x64.dmg` | Intel 芯片 |
-            | Windows | x64 | `Traceless_*_x64-setup.exe` | 64位系统 (推荐) |
-            | Windows | x86 | `Traceless_*_x86-setup.exe` | 32位系统 |
-            | Linux | x64 | `traceless_*_amd64.deb` | Debian/Ubuntu |
-            | Linux | x64 | `traceless_*_amd64.AppImage` | 通用格式 |
 
             ### 安装说明 / Installation
 
             **macOS**: 双击 `.dmg` 文件，将应用拖入 Applications 文件夹
-
-            **Windows**: 运行 `.exe` 或 `.msi` 安装程序
-
-            **Linux**:
-            - Debian/Ubuntu: `sudo dpkg -i traceless_*.deb`
-            - AppImage: `chmod +x *.AppImage && ./*.AppImage`
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
@@ -122,17 +90,12 @@ jobs:
             src-tauri/target/*/release/bundle/macos/*.app
             src-tauri/target/release/bundle/dmg/*.dmg
             src-tauri/target/release/bundle/macos/*.app
-            src-tauri/target/release/bundle/msi/*.msi
-            src-tauri/target/release/bundle/nsis/*.exe
-            src-tauri/target/release/bundle/deb/*.deb
-            src-tauri/target/release/bundle/appimage/*.AppImage
-            src-tauri/target/release/bundle/rpm/*.rpm
           if-no-files-found: ignore
 
   # 汇总所有构建产物
   collect-artifacts:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -143,5 +106,5 @@ jobs:
       - name: List all artifacts
         run: |
           echo "=== All Build Artifacts ==="
-          find artifacts -type f \( -name "*.dmg" -o -name "*.msi" -o -name "*.exe" -o -name "*.deb" -o -name "*.AppImage" -o -name "*.rpm" \) 2>/dev/null || true
+          find artifacts -type f -name "*.dmg" 2>/dev/null || true
           ls -laR artifacts/

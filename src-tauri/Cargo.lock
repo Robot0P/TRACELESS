@@ -5439,7 +5439,6 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "walkdir",
- "windows 0.52.0",
  "zeroize",
 ]
 

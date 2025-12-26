@@ -1,4 +1,3 @@
-use crate::modules::command_utils::CommandExt;
 use serde::{Deserialize, Serialize};
 use std::process::Command;
 use sysinfo::Networks;
@@ -239,20 +238,6 @@ pub fn scan_network_items() -> Result<NetworkScanResult, String> {
         category: "历史".to_string(),
     });
 
-    #[cfg(target_os = "windows")]
-    {
-        // 10. NetBIOS 缓存 (Windows only)
-        items.push(NetworkCleanItem {
-            item_type: "netbios_cache".to_string(),
-            label: "NetBIOS 缓存".to_string(),
-            description: "网络基本输入输出系统缓存".to_string(),
-            count: 0,
-            count_display: "可清理".to_string(),
-            accessible: true,
-            category: "缓存".to_string(),
-        });
-    }
-
     // 过滤掉 count 为 0 且不可清理的项目
     items.retain(|item| item.count > 0 || item.accessible);
 
@@ -267,94 +252,38 @@ pub fn scan_network_items() -> Result<NetworkScanResult, String> {
 fn get_active_connections() -> Result<Vec<ConnectionInfo>, String> {
     let mut connections = Vec::new();
 
-    #[cfg(target_os = "macos")]
-    {
-        // 使用 netstat 获取连接
-        let output = Command::new("netstat")
-            .args(&["-anv", "-p", "tcp"])
-            .output()
-            .map_err(|e| format!("获取连接失败: {}", e))?;
+    // 使用 netstat 获取连接
+    let output = Command::new("netstat")
+        .args(["-anv", "-p", "tcp"])
+        .output()
+        .map_err(|e| format!("获取连接失败: {}", e))?;
 
-        let output_str = String::from_utf8_lossy(&output.stdout);
+    let output_str = String::from_utf8_lossy(&output.stdout);
 
-        for line in output_str.lines().skip(2) {
-            let parts: Vec<&str> = line.split_whitespace().collect();
-            if parts.len() >= 6 {
-                let local = parts[3];
-                let remote = parts[4];
-                let state = parts[5];
+    for line in output_str.lines().skip(2) {
+        let parts: Vec<&str> = line.split_whitespace().collect();
+        if parts.len() >= 6 {
+            let local = parts[3];
+            let remote = parts[4];
+            let state = parts[5];
 
-                // 解析地址和端口
-                if let (Some((local_addr, local_port)), Some((remote_addr, remote_port))) =
-                    (parse_address(local), parse_address(remote))
-                {
-                    let pid = parts.get(8).and_then(|p| p.parse::<u32>().ok());
+            // 解析地址和端口
+            if let (Some((local_addr, local_port)), Some((remote_addr, remote_port))) =
+                (parse_address(local), parse_address(remote))
+            {
+                let pid = parts.get(8).and_then(|p| p.parse::<u32>().ok());
 
-                    connections.push(ConnectionInfo {
-                        protocol: "TCP".to_string(),
-                        local_address: local_addr,
-                        local_port,
-                        remote_address: remote_addr,
-                        remote_port,
-                        state: state.to_string(),
-                        pid,
-                        process_name: None,
-                    });
-                }
+                connections.push(ConnectionInfo {
+                    protocol: "TCP".to_string(),
+                    local_address: local_addr,
+                    local_port,
+                    remote_address: remote_addr,
+                    remote_port,
+                    state: state.to_string(),
+                    pid,
+                    process_name: None,
+                });
             }
-        }
-    }
-
-    #[cfg(target_os = "linux")]
-    {
-        let output = Command::new("ss")
-            .args(&["-tunapH"])
-            .output()
-            .map_err(|e| format!("获取连接失败: {}", e))?;
-
-        let output_str = String::from_utf8_lossy(&output.stdout);
-
-        for line in output_str.lines() {
-            let parts: Vec<&str> = line.split_whitespace().collect();
-            if parts.len() >= 6 {
-                let protocol = parts[0].to_uppercase();
-                let state = parts[1];
-                let local = parts[4];
-                let remote = parts[5];
-
-                if let (Some((local_addr, local_port)), Some((remote_addr, remote_port))) =
-                    (parse_address(local), parse_address(remote))
-                {
-                    connections.push(ConnectionInfo {
-                        protocol,
-                        local_address: local_addr,
-                        local_port,
-                        remote_address: remote_addr,
-                        remote_port,
-                        state: state.to_string(),
-                        pid: None,
-                        process_name: None,
-                    });
-                }
-            }
-        }
-    }
-
-    #[cfg(target_os = "windows")]
-    {
-        // Use Windows API instead of netstat command
-        let tcp_connections = crate::modules::windows_utils::get_tcp_connections();
-        for conn in tcp_connections {
-            connections.push(ConnectionInfo {
-                protocol: conn.protocol,
-                local_address: conn.local_address,
-                local_port: conn.local_port,
-                remote_address: conn.remote_address,
-                remote_port: conn.remote_port,
-                state: conn.state,
-                pid: Some(conn.pid),
-                process_name: None,
-            });
         }
     }
 
@@ -397,44 +326,22 @@ fn parse_address(addr: &str) -> Option<(String, u16)> {
 fn get_dns_servers() -> Result<Vec<String>, String> {
     let mut servers = Vec::new();
 
-    #[cfg(target_os = "macos")]
-    {
-        let output = Command::new("scutil")
-            .arg("--dns")
-            .output()
-            .map_err(|e| format!("获取DNS服务器失败: {}", e))?;
+    let output = Command::new("scutil")
+        .arg("--dns")
+        .output()
+        .map_err(|e| format!("获取DNS服务器失败: {}", e))?;
 
-        let output_str = String::from_utf8_lossy(&output.stdout);
+    let output_str = String::from_utf8_lossy(&output.stdout);
 
-        for line in output_str.lines() {
-            let line = line.trim();
-            if line.starts_with("nameserver") {
-                if let Some(server) = line.split_whitespace().nth(2) {
-                    if !servers.contains(&server.to_string()) {
-                        servers.push(server.to_string());
-                    }
+    for line in output_str.lines() {
+        let line = line.trim();
+        if line.starts_with("nameserver") {
+            if let Some(server) = line.split_whitespace().nth(2) {
+                if !servers.contains(&server.to_string()) {
+                    servers.push(server.to_string());
                 }
             }
         }
-    }
-
-    #[cfg(target_os = "linux")]
-    {
-        if let Ok(content) = std::fs::read_to_string("/etc/resolv.conf") {
-            for line in content.lines() {
-                if line.starts_with("nameserver") {
-                    if let Some(server) = line.split_whitespace().nth(1) {
-                        servers.push(server.to_string());
-                    }
-                }
-            }
-        }
-    }
-
-    #[cfg(target_os = "windows")]
-    {
-        // Use Windows API instead of netsh command
-        servers = crate::modules::windows_utils::get_dns_servers();
     }
 
     Ok(servers)
@@ -444,63 +351,23 @@ fn get_dns_servers() -> Result<Vec<String>, String> {
 fn get_wifi_networks() -> Result<Vec<WifiNetwork>, String> {
     let mut networks = Vec::new();
 
-    #[cfg(target_os = "macos")]
-    {
-        // 获取已保存的 WiFi 网络
-        let output = Command::new("networksetup")
-            .args(&["-listpreferredwirelessnetworks", "en0"])
-            .output();
+    // 获取已保存的 WiFi 网络
+    let output = Command::new("networksetup")
+        .args(["-listpreferredwirelessnetworks", "en0"])
+        .output();
 
-        if let Ok(output) = output {
-            let output_str = String::from_utf8_lossy(&output.stdout);
-            for line in output_str.lines().skip(1) {
-                let ssid = line.trim();
-                if !ssid.is_empty() {
-                    networks.push(WifiNetwork {
-                        ssid: ssid.to_string(),
-                        security: "WPA2".to_string(), // 默认
-                        auto_connect: true,
-                        last_connected: None,
-                    });
-                }
+    if let Ok(output) = output {
+        let output_str = String::from_utf8_lossy(&output.stdout);
+        for line in output_str.lines().skip(1) {
+            let ssid = line.trim();
+            if !ssid.is_empty() {
+                networks.push(WifiNetwork {
+                    ssid: ssid.to_string(),
+                    security: "WPA2".to_string(), // 默认
+                    auto_connect: true,
+                    last_connected: None,
+                });
             }
-        }
-    }
-
-    #[cfg(target_os = "linux")]
-    {
-        // 使用 nmcli 获取保存的连接
-        let output = Command::new("nmcli")
-            .args(&["-t", "-f", "NAME,TYPE", "connection", "show"])
-            .output();
-
-        if let Ok(output) = output {
-            let output_str = String::from_utf8_lossy(&output.stdout);
-            for line in output_str.lines() {
-                let parts: Vec<&str> = line.split(':').collect();
-                if parts.len() >= 2 && parts[1].contains("wireless") {
-                    networks.push(WifiNetwork {
-                        ssid: parts[0].to_string(),
-                        security: "WPA2".to_string(),
-                        auto_connect: true,
-                        last_connected: None,
-                    });
-                }
-            }
-        }
-    }
-
-    #[cfg(target_os = "windows")]
-    {
-        // Use Windows WLAN API instead of netsh command
-        let profiles = crate::modules::windows_utils::get_wifi_profiles();
-        for profile in profiles {
-            networks.push(WifiNetwork {
-                ssid: profile.ssid,
-                security: profile.security,
-                auto_connect: true,
-                last_connected: None,
-            });
         }
     }
 
@@ -511,63 +378,40 @@ fn get_wifi_networks() -> Result<Vec<WifiNetwork>, String> {
 fn get_vpn_connections() -> Result<Vec<VpnConnection>, String> {
     let mut vpns = Vec::new();
 
-    #[cfg(target_os = "macos")]
-    {
-        // 使用 scutil 获取 VPN 配置
-        let output = Command::new("scutil")
-            .args(&["--nc", "list"])
-            .output();
+    // 使用 scutil 获取 VPN 配置
+    let output = Command::new("scutil")
+        .args(["--nc", "list"])
+        .output();
 
-        if let Ok(output) = output {
-            let output_str = String::from_utf8_lossy(&output.stdout);
-            for line in output_str.lines() {
-                // 解析 VPN 配置行
-                if line.contains("PPP") || line.contains("IPSec") || line.contains("VPN") {
-                    // 提取名称
-                    if let Some(name_start) = line.find('"') {
-                        if let Some(name_end) = line.rfind('"') {
-                            let name = &line[name_start + 1..name_end];
-                            let vpn_type = if line.contains("IPSec") {
-                                "IPSec"
-                            } else if line.contains("L2TP") {
-                                "L2TP"
-                            } else if line.contains("PPTP") {
-                                "PPTP"
-                            } else {
-                                "Unknown"
-                            };
+    if let Ok(output) = output {
+        let output_str = String::from_utf8_lossy(&output.stdout);
+        for line in output_str.lines() {
+            // 解析 VPN 配置行
+            if line.contains("PPP") || line.contains("IPSec") || line.contains("VPN") {
+                // 提取名称
+                if let Some(name_start) = line.find('"') {
+                    if let Some(name_end) = line.rfind('"') {
+                        let name = &line[name_start + 1..name_end];
+                        let vpn_type = if line.contains("IPSec") {
+                            "IPSec"
+                        } else if line.contains("L2TP") {
+                            "L2TP"
+                        } else if line.contains("PPTP") {
+                            "PPTP"
+                        } else {
+                            "Unknown"
+                        };
 
-                            let connected = line.contains("Connected");
+                        let connected = line.contains("Connected");
 
-                            vpns.push(VpnConnection {
-                                name: name.to_string(),
-                                vpn_type: vpn_type.to_string(),
-                                server: "".to_string(),
-                                connected,
-                            });
-                        }
+                        vpns.push(VpnConnection {
+                            name: name.to_string(),
+                            vpn_type: vpn_type.to_string(),
+                            server: "".to_string(),
+                            connected,
+                        });
                     }
                 }
-            }
-        }
-    }
-
-    #[cfg(target_os = "windows")]
-    {
-        // Use RAS API instead of rasdial command
-        // RasEnumConnections requires complex setup, for now use registry-based detection
-        // This is a simplified approach that checks for active VPN adapters
-        let adapters = crate::modules::windows_utils::get_network_adapters();
-        for adapter in adapters {
-            // Check if adapter name suggests VPN
-            let name_lower = adapter.name.to_lowercase();
-            if name_lower.contains("vpn") || name_lower.contains("tap") || name_lower.contains("tun") {
-                vpns.push(VpnConnection {
-                    name: adapter.name,
-                    vpn_type: "Unknown".to_string(),
-                    server: "".to_string(),
-                    connected: true,
-                });
             }
         }
     }
@@ -585,103 +429,100 @@ fn get_proxy_settings() -> Result<ProxySettings, String> {
         pac_url: None,
     };
 
-    #[cfg(target_os = "macos")]
-    {
-        // 获取 HTTP 代理
-        let output = Command::new("networksetup")
-            .args(&["-getwebproxy", "Wi-Fi"])
-            .output();
+    // 获取 HTTP 代理
+    let output = Command::new("networksetup")
+        .args(["-getwebproxy", "Wi-Fi"])
+        .output();
 
-        if let Ok(output) = output {
-            let output_str = String::from_utf8_lossy(&output.stdout);
-            let mut server = String::new();
-            let mut port = String::new();
-            let mut enabled = false;
+    if let Ok(output) = output {
+        let output_str = String::from_utf8_lossy(&output.stdout);
+        let mut server = String::new();
+        let mut port = String::new();
+        let mut enabled = false;
 
-            for line in output_str.lines() {
-                if line.starts_with("Enabled:") {
-                    enabled = line.contains("Yes");
-                } else if line.starts_with("Server:") {
-                    server = line.replace("Server:", "").trim().to_string();
-                } else if line.starts_with("Port:") {
-                    port = line.replace("Port:", "").trim().to_string();
-                }
-            }
-
-            if enabled && !server.is_empty() {
-                settings.http_proxy = Some(format!("{}:{}", server, port));
-                settings.proxy_enabled = true;
+        for line in output_str.lines() {
+            if line.starts_with("Enabled:") {
+                enabled = line.contains("Yes");
+            } else if line.starts_with("Server:") {
+                server = line.replace("Server:", "").trim().to_string();
+            } else if line.starts_with("Port:") {
+                port = line.replace("Port:", "").trim().to_string();
             }
         }
 
-        // 获取 HTTPS 代理
-        let output = Command::new("networksetup")
-            .args(&["-getsecurewebproxy", "Wi-Fi"])
-            .output();
+        if enabled && !server.is_empty() {
+            settings.http_proxy = Some(format!("{}:{}", server, port));
+            settings.proxy_enabled = true;
+        }
+    }
 
-        if let Ok(output) = output {
-            let output_str = String::from_utf8_lossy(&output.stdout);
-            let mut server = String::new();
-            let mut port = String::new();
-            let mut enabled = false;
+    // 获取 HTTPS 代理
+    let output = Command::new("networksetup")
+        .args(["-getsecurewebproxy", "Wi-Fi"])
+        .output();
 
-            for line in output_str.lines() {
-                if line.starts_with("Enabled:") {
-                    enabled = line.contains("Yes");
-                } else if line.starts_with("Server:") {
-                    server = line.replace("Server:", "").trim().to_string();
-                } else if line.starts_with("Port:") {
-                    port = line.replace("Port:", "").trim().to_string();
-                }
-            }
+    if let Ok(output) = output {
+        let output_str = String::from_utf8_lossy(&output.stdout);
+        let mut server = String::new();
+        let mut port = String::new();
+        let mut enabled = false;
 
-            if enabled && !server.is_empty() {
-                settings.https_proxy = Some(format!("{}:{}", server, port));
-                settings.proxy_enabled = true;
+        for line in output_str.lines() {
+            if line.starts_with("Enabled:") {
+                enabled = line.contains("Yes");
+            } else if line.starts_with("Server:") {
+                server = line.replace("Server:", "").trim().to_string();
+            } else if line.starts_with("Port:") {
+                port = line.replace("Port:", "").trim().to_string();
             }
         }
 
-        // 获取 SOCKS 代理
-        let output = Command::new("networksetup")
-            .args(&["-getsocksfirewallproxy", "Wi-Fi"])
-            .output();
+        if enabled && !server.is_empty() {
+            settings.https_proxy = Some(format!("{}:{}", server, port));
+            settings.proxy_enabled = true;
+        }
+    }
 
-        if let Ok(output) = output {
-            let output_str = String::from_utf8_lossy(&output.stdout);
-            let mut server = String::new();
-            let mut port = String::new();
-            let mut enabled = false;
+    // 获取 SOCKS 代理
+    let output = Command::new("networksetup")
+        .args(["-getsocksfirewallproxy", "Wi-Fi"])
+        .output();
 
-            for line in output_str.lines() {
-                if line.starts_with("Enabled:") {
-                    enabled = line.contains("Yes");
-                } else if line.starts_with("Server:") {
-                    server = line.replace("Server:", "").trim().to_string();
-                } else if line.starts_with("Port:") {
-                    port = line.replace("Port:", "").trim().to_string();
-                }
-            }
+    if let Ok(output) = output {
+        let output_str = String::from_utf8_lossy(&output.stdout);
+        let mut server = String::new();
+        let mut port = String::new();
+        let mut enabled = false;
 
-            if enabled && !server.is_empty() {
-                settings.socks_proxy = Some(format!("{}:{}", server, port));
-                settings.proxy_enabled = true;
+        for line in output_str.lines() {
+            if line.starts_with("Enabled:") {
+                enabled = line.contains("Yes");
+            } else if line.starts_with("Server:") {
+                server = line.replace("Server:", "").trim().to_string();
+            } else if line.starts_with("Port:") {
+                port = line.replace("Port:", "").trim().to_string();
             }
         }
 
-        // 获取 PAC URL
-        let output = Command::new("networksetup")
-            .args(&["-getautoproxyurl", "Wi-Fi"])
-            .output();
+        if enabled && !server.is_empty() {
+            settings.socks_proxy = Some(format!("{}:{}", server, port));
+            settings.proxy_enabled = true;
+        }
+    }
 
-        if let Ok(output) = output {
-            let output_str = String::from_utf8_lossy(&output.stdout);
-            for line in output_str.lines() {
-                if line.starts_with("URL:") {
-                    let url = line.replace("URL:", "").trim().to_string();
-                    if !url.is_empty() && url != "(null)" {
-                        settings.pac_url = Some(url);
-                        settings.proxy_enabled = true;
-                    }
+    // 获取 PAC URL
+    let output = Command::new("networksetup")
+        .args(["-getautoproxyurl", "Wi-Fi"])
+        .output();
+
+    if let Ok(output) = output {
+        let output_str = String::from_utf8_lossy(&output.stdout);
+        for line in output_str.lines() {
+            if line.starts_with("URL:") {
+                let url = line.replace("URL:", "").trim().to_string();
+                if !url.is_empty() && url != "(null)" {
+                    settings.pac_url = Some(url);
+                    settings.proxy_enabled = true;
                 }
             }
         }
@@ -747,17 +588,9 @@ fn determine_interface_type(name: &str) -> String {
         } else {
             "Ethernet".to_string()
         }
-    } else if name_lower.starts_with("eth") || name_lower.starts_with("enp") || name_lower.starts_with("eno") || name_lower.starts_with("ens") {
-        "Ethernet".to_string()
-    } else if name_lower.starts_with("wlan") || name_lower.starts_with("wlp") || name_lower.starts_with("wifi") {
-        "Wi-Fi".to_string()
-    } else if name_lower.starts_with("docker") || name_lower.starts_with("br-") {
-        "Docker".to_string()
-    } else if name_lower.starts_with("veth") {
-        "Virtual Ethernet".to_string()
     } else if name_lower.starts_with("tun") || name_lower.starts_with("tap") || name_lower.starts_with("utun") || name_lower.starts_with("ipsec") {
         "VPN".to_string()
-    } else if name_lower.starts_with("virbr") || name_lower.starts_with("bridge") {
+    } else if name_lower.starts_with("bridge") {
         "Bridge".to_string()
     } else if name_lower.starts_with("vmnet") || name_lower.starts_with("vboxnet") {
         "Virtual Machine".to_string()
@@ -767,7 +600,6 @@ fn determine_interface_type(name: &str) -> String {
 }
 
 /// 获取接口详细信息 (IP, MAC, status)
-#[cfg(target_os = "macos")]
 fn get_interface_details(name: &str) -> (Option<String>, Option<String>, String) {
     let output = Command::new("ifconfig")
         .arg(name)
@@ -802,183 +634,53 @@ fn get_interface_details(name: &str) -> (Option<String>, Option<String>, String)
     }
 }
 
-#[cfg(target_os = "linux")]
-fn get_interface_details(name: &str) -> (Option<String>, Option<String>, String) {
-    let output = Command::new("ip")
-        .args(&["addr", "show", name])
-        .output();
-
-    if let Ok(output) = output {
-        let output_str = String::from_utf8_lossy(&output.stdout);
-        let mut ip_address = None;
-        let mut mac_address = None;
-        let mut status = "inactive".to_string();
-
-        for line in output_str.lines() {
-            let line = line.trim();
-            if line.starts_with("link/ether ") {
-                let parts: Vec<&str> = line.split_whitespace().collect();
-                if parts.len() >= 2 {
-                    mac_address = Some(parts[1].to_string());
-                }
-            } else if line.starts_with("inet ") && !line.starts_with("inet6 ") {
-                let parts: Vec<&str> = line.split_whitespace().collect();
-                if parts.len() >= 2 {
-                    let ip = parts[1].split('/').next().unwrap_or(parts[1]);
-                    ip_address = Some(ip.to_string());
-                }
-            }
-
-            if output_str.contains("UP") && output_str.contains("LOWER_UP") {
-                status = "active".to_string();
-            } else if output_str.contains("UP") {
-                status = "up".to_string();
-            }
-        }
-
-        (ip_address, mac_address, status)
-    } else {
-        (None, None, "unknown".to_string())
-    }
-}
-
-#[cfg(target_os = "windows")]
-fn get_interface_details(name: &str) -> (Option<String>, Option<String>, String) {
-    // Use Windows API instead of ipconfig command
-    let adapters = crate::modules::windows_utils::get_network_adapters();
-
-    for adapter in adapters {
-        if adapter.name == name || adapter.description == name {
-            // Get first IP address if available
-            let ip_address = adapter.ip_addresses.first().cloned();
-            let mac_address = if adapter.mac_address.is_empty() {
-                None
-            } else {
-                Some(adapter.mac_address)
-            };
-            let status = if ip_address.is_some() { "active" } else { "inactive" };
-            return (ip_address, mac_address, status.to_string());
-        }
-    }
-
-    (None, None, "unknown".to_string())
-}
-
-#[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
-fn get_interface_details(_name: &str) -> (Option<String>, Option<String>, String) {
-    (None, None, "unknown".to_string())
-}
-
 /// 回退方法：使用平台特定命令获取网络接口
 fn get_network_interfaces_fallback() -> Result<Vec<NetworkInterface>, String> {
     let mut interfaces = Vec::new();
 
-    #[cfg(target_os = "macos")]
-    {
-        let output = Command::new("ifconfig")
-            .output()
-            .map_err(|e| format!("获取网络接口失败: {}", e))?;
+    let output = Command::new("ifconfig")
+        .output()
+        .map_err(|e| format!("获取网络接口失败: {}", e))?;
 
-        let output_str = String::from_utf8_lossy(&output.stdout);
-        let mut current_interface: Option<NetworkInterface> = None;
+    let output_str = String::from_utf8_lossy(&output.stdout);
+    let mut current_interface: Option<NetworkInterface> = None;
 
-        for line in output_str.lines() {
-            if !line.starts_with('\t') && !line.starts_with(' ') && line.contains(':') {
-                if let Some(iface) = current_interface.take() {
-                    interfaces.push(iface);
-                }
-
-                let name = line.split(':').next().unwrap_or("").to_string();
-                let interface_type = determine_interface_type(&name);
-
-                current_interface = Some(NetworkInterface {
-                    name,
-                    ip_address: None,
-                    mac_address: None,
-                    status: "inactive".to_string(),
-                    interface_type,
-                });
-            } else if let Some(ref mut iface) = current_interface {
-                let line = line.trim();
-                if line.starts_with("inet ") {
-                    let parts: Vec<&str> = line.split_whitespace().collect();
-                    if parts.len() >= 2 {
-                        iface.ip_address = Some(parts[1].to_string());
-                    }
-                } else if line.starts_with("ether ") {
-                    let parts: Vec<&str> = line.split_whitespace().collect();
-                    if parts.len() >= 2 {
-                        iface.mac_address = Some(parts[1].to_string());
-                    }
-                } else if line.contains("status: active") {
-                    iface.status = "active".to_string();
-                }
+    for line in output_str.lines() {
+        if !line.starts_with('\t') && !line.starts_with(' ') && line.contains(':') {
+            if let Some(iface) = current_interface.take() {
+                interfaces.push(iface);
             }
-        }
 
-        if let Some(iface) = current_interface {
-            interfaces.push(iface);
+            let name = line.split(':').next().unwrap_or("").to_string();
+            let interface_type = determine_interface_type(&name);
+
+            current_interface = Some(NetworkInterface {
+                name,
+                ip_address: None,
+                mac_address: None,
+                status: "inactive".to_string(),
+                interface_type,
+            });
+        } else if let Some(ref mut iface) = current_interface {
+            let line = line.trim();
+            if line.starts_with("inet ") {
+                let parts: Vec<&str> = line.split_whitespace().collect();
+                if parts.len() >= 2 {
+                    iface.ip_address = Some(parts[1].to_string());
+                }
+            } else if line.starts_with("ether ") {
+                let parts: Vec<&str> = line.split_whitespace().collect();
+                if parts.len() >= 2 {
+                    iface.mac_address = Some(parts[1].to_string());
+                }
+            } else if line.contains("status: active") {
+                iface.status = "active".to_string();
+            }
         }
     }
 
-    #[cfg(target_os = "linux")]
-    {
-        let output = Command::new("ip")
-            .args(&["addr", "show"])
-            .output()
-            .map_err(|e| format!("获取网络接口失败: {}", e))?;
-
-        let output_str = String::from_utf8_lossy(&output.stdout);
-        let mut current_interface: Option<NetworkInterface> = None;
-
-        for line in output_str.lines() {
-            if let Some(colon_pos) = line.find(':') {
-                if line.chars().next().map(|c| c.is_numeric()).unwrap_or(false) {
-                    if let Some(iface) = current_interface.take() {
-                        interfaces.push(iface);
-                    }
-
-                    let after_first_colon = &line[colon_pos + 1..];
-                    if let Some(second_colon) = after_first_colon.find(':') {
-                        let name = after_first_colon[..second_colon].trim().to_string();
-                        let interface_type = determine_interface_type(&name);
-                        let status = if line.contains("UP") && line.contains("LOWER_UP") {
-                            "active"
-                        } else if line.contains("UP") {
-                            "up"
-                        } else {
-                            "inactive"
-                        };
-
-                        current_interface = Some(NetworkInterface {
-                            name,
-                            ip_address: None,
-                            mac_address: None,
-                            status: status.to_string(),
-                            interface_type,
-                        });
-                    }
-                }
-            } else if let Some(ref mut iface) = current_interface {
-                let line = line.trim();
-                if line.starts_with("link/ether ") {
-                    let parts: Vec<&str> = line.split_whitespace().collect();
-                    if parts.len() >= 2 {
-                        iface.mac_address = Some(parts[1].to_string());
-                    }
-                } else if line.starts_with("inet ") && !line.starts_with("inet6 ") {
-                    let parts: Vec<&str> = line.split_whitespace().collect();
-                    if parts.len() >= 2 {
-                        let ip = parts[1].split('/').next().unwrap_or(parts[1]);
-                        iface.ip_address = Some(ip.to_string());
-                    }
-                }
-            }
-        }
-
-        if let Some(iface) = current_interface {
-            interfaces.push(iface);
-        }
+    if let Some(iface) = current_interface {
+        interfaces.push(iface);
     }
 
     Ok(interfaces)
@@ -986,141 +688,51 @@ fn get_network_interfaces_fallback() -> Result<Vec<NetworkInterface>, String> {
 
 /// 获取 DNS 缓存条目数
 fn get_dns_cache_count() -> Result<u32, String> {
-    #[cfg(target_os = "macos")]
-    {
-        // macOS 没有直接获取 DNS 缓存数量的命令，返回估计值
-        let output = Command::new("dscacheutil")
-            .args(&["-statistics"])
-            .output();
+    // macOS 没有直接获取 DNS 缓存数量的命令，返回估计值
+    let output = Command::new("dscacheutil")
+        .args(["-statistics"])
+        .output();
 
-        if let Ok(output) = output {
-            let output_str = String::from_utf8_lossy(&output.stdout);
-            // 尝试从统计信息中解析
-            for line in output_str.lines() {
-                if line.contains("entries") {
-                    if let Some(num) = line.split_whitespace()
-                        .find(|s| s.chars().all(|c| c.is_numeric()))
-                        .and_then(|s| s.parse::<u32>().ok())
-                    {
-                        return Ok(num);
-                    }
+    if let Ok(output) = output {
+        let output_str = String::from_utf8_lossy(&output.stdout);
+        // 尝试从统计信息中解析
+        for line in output_str.lines() {
+            if line.contains("entries") {
+                if let Some(num) = line.split_whitespace()
+                    .find(|s| s.chars().all(|c| c.is_numeric()))
+                    .and_then(|s| s.parse::<u32>().ok())
+                {
+                    return Ok(num);
                 }
             }
         }
-        // 返回默认估计值
-        Ok(50)
     }
-
-    #[cfg(target_os = "windows")]
-    {
-        // Windows does not provide a public API for DNS cache enumeration
-        // Return a reasonable estimate
-        Ok(100)
-    }
-
-    #[cfg(target_os = "linux")]
-    {
-        // Linux systemd-resolved
-        let output = Command::new("resolvectl")
-            .arg("statistics")
-            .output();
-
-        if let Ok(output) = output {
-            let output_str = String::from_utf8_lossy(&output.stdout);
-            for line in output_str.lines() {
-                if line.contains("Current Cache Size") {
-                    if let Some(num) = line.split_whitespace()
-                        .last()
-                        .and_then(|s| s.parse::<u32>().ok())
-                    {
-                        return Ok(num);
-                    }
-                }
-            }
-        }
-        Ok(0)
-    }
-
-    #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
-    {
-        Ok(0)
-    }
+    // 返回默认估计值
+    Ok(50)
 }
 
 /// 获取 ARP 缓存条目数
 fn get_arp_cache_count() -> Result<u32, String> {
-    #[cfg(target_os = "macos")]
-    {
-        let output = Command::new("arp")
-            .arg("-an")
-            .output()
-            .map_err(|e| format!("获取ARP缓存失败: {}", e))?;
+    let output = Command::new("arp")
+        .arg("-an")
+        .output()
+        .map_err(|e| format!("获取ARP缓存失败: {}", e))?;
 
-        let output_str = String::from_utf8_lossy(&output.stdout);
-        let count = output_str.lines().filter(|line| line.contains("at")).count() as u32;
-        Ok(count)
-    }
-
-    #[cfg(target_os = "linux")]
-    {
-        let output = Command::new("ip")
-            .args(&["neigh", "show"])
-            .output()
-            .map_err(|e| format!("获取ARP缓存失败: {}", e))?;
-
-        let output_str = String::from_utf8_lossy(&output.stdout);
-        let count = output_str.lines().count() as u32;
-        Ok(count)
-    }
-
-    #[cfg(target_os = "windows")]
-    {
-        // Use Windows API instead of arp command
-        Ok(crate::modules::windows_utils::get_arp_cache_count())
-    }
-
-    #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
-    {
-        Ok(0)
-    }
+    let output_str = String::from_utf8_lossy(&output.stdout);
+    let count = output_str.lines().filter(|line| line.contains("at")).count() as u32;
+    Ok(count)
 }
 
 /// 获取路由表条目数
 fn get_routing_entries_count() -> Result<u32, String> {
-    #[cfg(target_os = "macos")]
-    {
-        let output = Command::new("netstat")
-            .arg("-rn")
-            .output()
-            .map_err(|e| format!("获取路由表失败: {}", e))?;
+    let output = Command::new("netstat")
+        .arg("-rn")
+        .output()
+        .map_err(|e| format!("获取路由表失败: {}", e))?;
 
-        let output_str = String::from_utf8_lossy(&output.stdout);
-        let count = output_str.lines().skip(4).filter(|line| !line.is_empty()).count() as u32;
-        Ok(count)
-    }
-
-    #[cfg(target_os = "linux")]
-    {
-        let output = Command::new("ip")
-            .args(&["route", "show"])
-            .output()
-            .map_err(|e| format!("获取路由表失败: {}", e))?;
-
-        let output_str = String::from_utf8_lossy(&output.stdout);
-        let count = output_str.lines().count() as u32;
-        Ok(count)
-    }
-
-    #[cfg(target_os = "windows")]
-    {
-        // Use Windows API instead of route command
-        Ok(crate::modules::windows_utils::get_route_count())
-    }
-
-    #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
-    {
-        Ok(0)
-    }
+    let output_str = String::from_utf8_lossy(&output.stdout);
+    let count = output_str.lines().skip(4).filter(|line| !line.is_empty()).count() as u32;
+    Ok(count)
 }
 
 impl Default for ProxySettings {
@@ -1137,177 +749,59 @@ impl Default for ProxySettings {
 
 /// 清理 DNS 缓存
 pub fn clear_dns_cache() -> Result<(), String> {
-    #[cfg(target_os = "windows")]
-    {
-        // Use Windows API instead of ipconfig /flushdns
-        crate::modules::windows_utils::flush_dns_cache()
-            .map_err(|e| format!("清理DNS缓存失败: {}", e))?;
-    }
+    Command::new("dscacheutil")
+        .arg("-flushcache")
+        .output()
+        .map_err(|e| format!("清理DNS缓存失败: {}", e))?;
 
-    #[cfg(target_os = "linux")]
-    {
-        // Linux: 重启 systemd-resolved 或 nscd
-        let services = vec!["systemd-resolved", "nscd", "dnsmasq"];
-        let mut success = false;
-
-        for service in services {
-            if Command::new("systemctl")
-                .args(&["restart", service])
-                .output()
-                .is_ok()
-            {
-                success = true;
-                break;
-            }
-        }
-
-        if !success {
-            // 尝试直接清理
-            let _ = Command::new("resolvectl")
-                .arg("flush-caches")
-                .output();
-        }
-    }
-
-    #[cfg(target_os = "macos")]
-    {
-        Command::new("dscacheutil")
-            .arg("-flushcache")
-            .output()
-            .map_err(|e| format!("清理DNS缓存失败: {}", e))?;
-
-        Command::new("killall")
-            .args(&["-HUP", "mDNSResponder"])
-            .output()
-            .ok();
-    }
+    Command::new("killall")
+        .args(["-HUP", "mDNSResponder"])
+        .output()
+        .ok();
 
     Ok(())
 }
 
 /// 清理 ARP 缓存
 pub fn clear_arp_cache() -> Result<(), String> {
-    #[cfg(target_os = "windows")]
-    {
-        // Use Windows API instead of arp command
-        crate::modules::windows_utils::clear_arp_cache()
-            .map_err(|e| format!("清理ARP缓存失败: {}", e))?;
-    }
-
-    #[cfg(target_os = "macos")]
-    {
-        // macOS 使用 arp -d -a 或 sudo arp -a -d
-        Command::new("arp")
-            .args(&["-d", "-a"])
-            .output()
-            .map_err(|e| format!("清理ARP缓存失败: {}", e))?;
-    }
-
-    #[cfg(target_os = "linux")]
-    {
-        Command::new("ip")
-            .args(&["neigh", "flush", "all"])
-            .output()
-            .map_err(|e| format!("清理ARP缓存失败: {}", e))?;
-    }
+    // macOS 使用 arp -d -a 或 sudo arp -a -d
+    Command::new("arp")
+        .args(["-d", "-a"])
+        .output()
+        .map_err(|e| format!("清理ARP缓存失败: {}", e))?;
 
     Ok(())
 }
 
-/// 清理 NetBIOS 缓存 (Windows only)
-#[cfg(target_os = "windows")]
-pub fn clear_netbios_cache() -> Result<(), String> {
-    // Use Windows API instead of nbtstat command
-    crate::modules::windows_utils::clear_netbios_cache()
-}
-
 /// 重置路由表
 pub fn reset_routing_table() -> Result<(), String> {
-    #[cfg(target_os = "windows")]
-    {
-        // Use Windows API instead of route command
-        crate::modules::windows_utils::clear_route_cache()
-    }
-
-    #[cfg(target_os = "macos")]
-    {
-        // macOS: 刷新路由缓存
-        Command::new("route")
-            .args(&["-n", "flush"])
-            .output()
-            .map_err(|e| format!("重置路由表失败: {}", e))?;
-        Ok(())
-    }
-
-    #[cfg(target_os = "linux")]
-    {
-        Command::new("ip")
-            .args(&["route", "flush", "cache"])
-            .output()
-            .map_err(|e| format!("重置路由表失败: {}", e))?;
-        Ok(())
-    }
-
-    #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
-    {
-        Ok(())
-    }
+    // macOS: 刷新路由缓存
+    Command::new("route")
+        .args(["-n", "flush"])
+        .output()
+        .map_err(|e| format!("重置路由表失败: {}", e))?;
+    Ok(())
 }
 
 /// 清理 WiFi 配置
 pub fn clear_wifi_profiles() -> Result<u32, String> {
     let mut count = 0;
 
-    #[cfg(target_os = "macos")]
-    {
-        // 获取所有保存的 WiFi 网络
-        let output = Command::new("networksetup")
-            .args(&["-listpreferredwirelessnetworks", "en0"])
-            .output()
-            .map_err(|e| format!("获取WiFi配置失败: {}", e))?;
+    // 获取所有保存的 WiFi 网络
+    let output = Command::new("networksetup")
+        .args(["-listpreferredwirelessnetworks", "en0"])
+        .output()
+        .map_err(|e| format!("获取WiFi配置失败: {}", e))?;
 
-        let output_str = String::from_utf8_lossy(&output.stdout);
-        for line in output_str.lines().skip(1) {
-            let ssid = line.trim();
-            if !ssid.is_empty() {
-                // 删除每个 WiFi 配置
-                let _ = Command::new("networksetup")
-                    .args(&["-removepreferredwirelessnetwork", "en0", ssid])
-                    .output();
-                count += 1;
-            }
-        }
-    }
-
-    #[cfg(target_os = "windows")]
-    {
-        // Use Windows WLAN API instead of netsh command
-        let profiles = crate::modules::windows_utils::get_wifi_profiles();
-        for profile in profiles {
-            if crate::modules::windows_utils::delete_wifi_profile(&profile.ssid).is_ok() {
-                count += 1;
-            }
-        }
-    }
-
-    #[cfg(target_os = "linux")]
-    {
-        // 使用 nmcli 删除 WiFi 连接
-        let output = Command::new("nmcli")
-            .args(&["-t", "-f", "NAME,TYPE", "connection", "show"])
-            .output();
-
-        if let Ok(output) = output {
-            let output_str = String::from_utf8_lossy(&output.stdout);
-            for line in output_str.lines() {
-                let parts: Vec<&str> = line.split(':').collect();
-                if parts.len() >= 2 && parts[1].contains("wireless") {
-                    let _ = Command::new("nmcli")
-                        .args(&["connection", "delete", parts[0]])
-                        .output();
-                    count += 1;
-                }
-            }
+    let output_str = String::from_utf8_lossy(&output.stdout);
+    for line in output_str.lines().skip(1) {
+        let ssid = line.trim();
+        if !ssid.is_empty() {
+            // 删除每个 WiFi 配置
+            let _ = Command::new("networksetup")
+                .args(["-removepreferredwirelessnetwork", "en0", ssid])
+                .output();
+            count += 1;
         }
     }
 
@@ -1316,104 +810,64 @@ pub fn clear_wifi_profiles() -> Result<u32, String> {
 
 /// 清理连接历史
 pub fn clear_connection_history() -> Result<(), String> {
-    #[cfg(target_os = "macos")]
-    {
-        // 清理最近使用的服务器历史
-        let home = std::env::var("HOME").unwrap_or_default();
+    // 清理最近使用的服务器历史
+    let home = std::env::var("HOME").unwrap_or_default();
 
-        // 清理 SMB/AFP 连接历史
-        let _ = std::fs::remove_file(format!("{}/.local/share/recently-used.xbel", home));
+    // 清理 SMB/AFP 连接历史
+    let _ = std::fs::remove_file(format!("{}/.local/share/recently-used.xbel", home));
 
-        // 清理网络位置历史
-        let _ = Command::new("defaults")
-            .args(&["delete", "com.apple.sidebarlists", "networkbrowser"])
-            .output();
-    }
-
-    #[cfg(target_os = "windows")]
-    {
-        // Use Windows API instead of reg command
-        // 清理网络连接历史
-        let _ = crate::modules::windows_utils::delete_registry_key(
-            r"HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Map Network Drive MRU"
-        );
-
-        // 清理最近的网络位置
-        let _ = crate::modules::windows_utils::delete_registry_key(
-            r"HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU"
-        );
-    }
+    // 清理网络位置历史
+    let _ = Command::new("defaults")
+        .args(["delete", "com.apple.sidebarlists", "networkbrowser"])
+        .output();
 
     Ok(())
 }
 
 /// 清理代理设置
 pub fn clear_proxy_settings() -> Result<(), String> {
-    #[cfg(target_os = "macos")]
-    {
-        // 禁用所有代理
-        let _ = Command::new("networksetup")
-            .args(&["-setwebproxystate", "Wi-Fi", "off"])
-            .output();
+    // 禁用所有代理
+    let _ = Command::new("networksetup")
+        .args(["-setwebproxystate", "Wi-Fi", "off"])
+        .output();
 
-        let _ = Command::new("networksetup")
-            .args(&["-setsecurewebproxystate", "Wi-Fi", "off"])
-            .output();
+    let _ = Command::new("networksetup")
+        .args(["-setsecurewebproxystate", "Wi-Fi", "off"])
+        .output();
 
-        let _ = Command::new("networksetup")
-            .args(&["-setsocksfirewallproxystate", "Wi-Fi", "off"])
-            .output();
+    let _ = Command::new("networksetup")
+        .args(["-setsocksfirewallproxystate", "Wi-Fi", "off"])
+        .output();
 
-        let _ = Command::new("networksetup")
-            .args(&["-setautoproxystate", "Wi-Fi", "off"])
-            .output();
-    }
-
-    #[cfg(target_os = "windows")]
-    {
-        // Use Windows API instead of reg command
-        let _ = crate::modules::windows_utils::set_registry_dword(
-            r"HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings",
-            "ProxyEnable",
-            0
-        );
-    }
+    let _ = Command::new("networksetup")
+        .args(["-setautoproxystate", "Wi-Fi", "off"])
+        .output();
 
     Ok(())
 }
 
 /// 断开 VPN 连接
 pub fn disconnect_vpn() -> Result<(), String> {
-    #[cfg(target_os = "macos")]
-    {
-        // 获取所有 VPN 配置
-        let output = Command::new("scutil")
-            .args(&["--nc", "list"])
-            .output();
+    // 获取所有 VPN 配置
+    let output = Command::new("scutil")
+        .args(["--nc", "list"])
+        .output();
 
-        if let Ok(output) = output {
-            let output_str = String::from_utf8_lossy(&output.stdout);
-            for line in output_str.lines() {
-                if line.contains("Connected") {
-                    // 提取 VPN 服务 ID
-                    if let Some(id_start) = line.find('(') {
-                        if let Some(id_end) = line.find(')') {
-                            let service_id = &line[id_start + 1..id_end];
-                            let _ = Command::new("scutil")
-                                .args(&["--nc", "stop", service_id])
-                                .output();
-                        }
+    if let Ok(output) = output {
+        let output_str = String::from_utf8_lossy(&output.stdout);
+        for line in output_str.lines() {
+            if line.contains("Connected") {
+                // 提取 VPN 服务 ID
+                if let Some(id_start) = line.find('(') {
+                    if let Some(id_end) = line.find(')') {
+                        let service_id = &line[id_start + 1..id_end];
+                        let _ = Command::new("scutil")
+                            .args(["--nc", "stop", service_id])
+                            .output();
                     }
                 }
             }
         }
-    }
-
-    #[cfg(target_os = "windows")]
-    {
-        // VPN disconnection via RasHangUp API would require complex setup
-        // For now, we just return success as VPN detection is already done via adapters
-        // The user can manually disconnect VPN connections
     }
 
     Ok(())
@@ -1428,8 +882,6 @@ pub fn clean_network(types: Vec<String>) -> Result<Vec<String>, String> {
         let result = match network_type.as_str() {
             "dns" | "dns_cache" => clear_dns_cache(),
             "arp" | "arp_table" => clear_arp_cache(),
-            #[cfg(target_os = "windows")]
-            "netbios" | "netbios_cache" => clear_netbios_cache(),
             "routing" | "routing_table" => reset_routing_table(),
             "wifi" | "wifi_profiles" => clear_wifi_profiles().map(|_| ()),
             "history" | "connection_history" => clear_connection_history(),
@@ -1450,8 +902,6 @@ pub fn clean_network(types: Vec<String>) -> Result<Vec<String>, String> {
             errors.join("\n")
         ));
     }
-
-    // errors logged silently
 
     Ok(cleaned)
 }
