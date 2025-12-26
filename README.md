@@ -8,10 +8,6 @@
 
 Traceless is a powerful macOS application designed to protect your digital privacy. With military-grade data sanitization capabilities, it helps you take control of your digital footprint.
 ## license 30
-## 许可证密钥列表
-
-以下为已格式化的许可证密钥（每行一个，使用代码块保留等宽格式）：
-
 ```
 MCPZF-5RSN3-RGGRQ-KSYQT-F8QMP
 6JU5W-LRNWD-TVVXS-ZAVK5-5KEUV
